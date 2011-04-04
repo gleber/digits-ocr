@@ -1,0 +1,10 @@
+sudo apt-get install libcv2.1 libcvaux2.1 libhighgui2.1 opencv-doc libcv-dev libcvaux-dev libhighgui-dev
+
+(cd /usr/local/include && sudo ln -s /usr/include/opencv .)
+
+git clone https://github.com/ser1zw/ruby-opencv.git
+cd ruby-opencv
+git checkout origin/OpenCV_2.1
+ruby ext/extconf.rb
+make
+
