@@ -1,6 +1,9 @@
 require 'rubygems'
 require 'gtk2'
 
+require 'opencv'
+include OpenCV
+
 class MSI < Gtk::Window
 
   FILE_IMAGE_TRAIN = 'train-images.idx3-ubyte'
@@ -16,6 +19,7 @@ class MSI < Gtk::Window
     @image_test = loadIDX(FILE_IMAGE_TEST)
     @label_test = loadIDX(FILE_LABEL_TEST)
     @current = 0
+    @edge = false
 
     @pixbuf = Gdk::Pixbuf.new(Gdk::Pixbuf::COLORSPACE_RGB, false, 8, 28, 28)
     @image = Gtk::Image.new @pixbuf.scale(280,280,Gdk::Pixbuf::INTERP_NEAREST)
@@ -29,6 +33,7 @@ class MSI < Gtk::Window
       #p "#{e.keyval}, Gdk::Keyval::GDK_#{Gdk::Keyval.to_name(e.keyval)}"
       case Gdk::Keyval.to_name(e.keyval)
       when 'Escape' then Gtk.main_quit
+      when 'F1' then @edge = !@edge; setImage;
       when 'Right' then @current += 1; @current = 0 if @current == @image_test.size; setImage;
       when 'Left' then @current -= 1; @current = @image_test.size-1 if @current < 0; setImage;
       end
@@ -44,6 +49,9 @@ class MSI < Gtk::Window
     @pixbuf.pixels = str
     @image.pixbuf = @pixbuf.scale(280,280,Gdk::Pixbuf::INTERP_NEAREST)
     set_title("MSI, img ##{@current} => #{@label_test[@current]}")
+    if @edge
+      edgifyImage
+    end
   end
 
   def loadIDX(filename)
@@ -76,6 +84,56 @@ class MSI < Gtk::Window
       raise 'ERROR: Excessive data in file' unless file.getbyte().nil?
       return ary
     end
+  end
+
+  def edgifyImage
+    mat = pixbufToCv(@pixbuf)
+    mat2 = mat.canny(50, 150)
+    @image.pixbuf = cvToPixbuf(mat2).scale(280, 280, Gdk::Pixbuf::INTERP_NEAREST)
+  end
+
+  def pixbufToCv(pixbuf)
+    stride = pixbuf.rowstride
+    w = pixbuf.height
+    h = pixbuf.width
+    image = CvMat.new(w, h, :cv8u, 1).clear!
+    for y in 0..(h-1)
+      for x in 0..(w-1)
+        i = x * 3 + y * stride
+        # puts i, pixbuf.pixels[i].getbyte(0)
+        # image[x, y] = @image_test[@current][i].getbyte(0)
+        v = pixbuf.pixels.getbyte(i)
+        printf('%3d ', v)
+        image[x, y] = v
+      end
+      puts
+    end
+    return image
+  end
+
+  def cvToPixbuf(image)
+    pixbuf = Gdk::Pixbuf.new(Gdk::Pixbuf::COLORSPACE_RGB, false, 8, 28, 28)
+    stride = pixbuf.rowstride
+    w = pixbuf.height
+    h = pixbuf.width
+    puts w, h, stride
+    puts pixbuf.pixels.length
+    str = pixbuf.pixels
+    for y in 0..(h-1)
+      for x in 0..(w-1)
+        v = image[x, y][0].truncate
+        printf('%3d ', v)
+
+        # printf("%d %d : %d\n", x, y, image[x, y][0].truncate)
+        i = x * 3 + y * stride
+        str.setbyte(i+0, v)
+        str.setbyte(i+1, v)
+        str.setbyte(i+2, v)
+      end
+      puts
+    end
+    pixbuf.pixels = str
+    return pixbuf
   end
 
 end
