@@ -90,6 +90,7 @@ class MSI < Gtk::Window
     mat = pixbufToCv(@pixbuf)
     mat2 = mat.canny(50, 150)
     @image.pixbuf = cvToPixbuf(mat2).scale(280, 280, Gdk::Pixbuf::INTERP_NEAREST)
+    shapeEstimator(mat2)
   end
 
   def pixbufToCv(pixbuf)
@@ -103,37 +104,84 @@ class MSI < Gtk::Window
         # puts i, pixbuf.pixels[i].getbyte(0)
         # image[x, y] = @image_test[@current][i].getbyte(0)
         v = pixbuf.pixels.getbyte(i)
-        printf('%3d ', v)
+        # printf('%3d ', v)
         image[x, y] = v
       end
-      puts
+      # puts
     end
     return image
   end
 
   def cvToPixbuf(image)
-    pixbuf = Gdk::Pixbuf.new(Gdk::Pixbuf::COLORSPACE_RGB, false, 8, 28, 28)
+    pixbuf = Gdk::Pixbuf.new(Gdk::Pixbuf::COLORSPACE_RGB, false, 8, image.width, image.height)
     stride = pixbuf.rowstride
-    w = pixbuf.height
-    h = pixbuf.width
-    puts w, h, stride
-    puts pixbuf.pixels.length
+    w = pixbuf.width
+    h = pixbuf.height
+    # puts w, h, stride
+    # puts pixbuf.pixels.length
     str = pixbuf.pixels
     for y in 0..(h-1)
       for x in 0..(w-1)
         v = image[x, y][0].truncate
-        printf('%3d ', v)
-
-        # printf("%d %d : %d\n", x, y, image[x, y][0].truncate)
+        # printf('%3d ', v)
         i = x * 3 + y * stride
         str.setbyte(i+0, v)
         str.setbyte(i+1, v)
         str.setbyte(i+2, v)
       end
-      puts
+      # puts
     end
     pixbuf.pixels = str
     return pixbuf
+  end
+
+  def shapeEstimator(mat)
+    contour = getCountour(mat)
+    estimator = {}
+    print contour
+  end
+
+  def getShapeContext(point, countour)
+    sc = CvMat.new(12, 5, :cv8u, 1) # angle x log(distance)
+    max_dist = 0
+    for p in contour
+      d = distance(point, p)
+      max_dist = Math.min(d, max_dist)
+    end
+    log_max_dist = Math.log(max_dist)
+
+    for p in contour
+      d = distance(point, p)
+      a = angle(point, p)
+      dbin = ((Math.log(d) / log_max_dist) * 5).truncate
+      abin = ((Math::PI / a) * 12).truncate
+      sc[abin, dbin] += 1
+    end
+  end
+
+  def distance(p1, p2)
+    return Math.hypot(Math.abs(p1[0] - p2[0]), Math.abs(p1[1] - p2[1]))
+  end
+
+  def angle(p1, p2)
+    dx = p1[0] - p2[0];
+    dy = p1[1] - p2[1];
+    return atan2(dy, dx);
+  end
+
+  def getCountour(mat)
+    contour = []
+    w = mat.width
+    h = mat.height
+    for y in 0..(h-1)
+      for x in 0..(w-1)
+        if mat[x, y][0] > 0
+          contour.push([x,y])
+        end
+      end
+    end
+    printf("%d edge points\n", contour.length)
+    return contour
   end
 
 end
