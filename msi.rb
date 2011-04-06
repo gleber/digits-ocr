@@ -2,10 +2,22 @@ require 'rubygems'
 require 'gtk2'
 
 require 'opencv'
+require 'pp'
+
 include OpenCV
+include Math
+
 $LOAD_PATH << './'
 
 require 'hungarian'
+
+def max(a, b)
+  a > b ? a : b
+end
+
+def min(a, b)
+  a < b ? a : b
+end
 
 class MSI < Gtk::Window
 
@@ -21,8 +33,8 @@ class MSI < Gtk::Window
     #@label_train = loadIDX(FILE_LABEL_TRAIN)
     @image_test = loadIDX(FILE_IMAGE_TEST)
     @label_test = loadIDX(FILE_LABEL_TEST)
-    @current = 0
-    @edge = false
+    @current = 3
+    @edge = true
 
     @pixbuf = Gdk::Pixbuf.new(Gdk::Pixbuf::COLORSPACE_RGB, false, 8, 28, 28)
     @image = Gtk::Image.new @pixbuf.scale(280,280,Gdk::Pixbuf::INTERP_NEAREST)
@@ -45,6 +57,13 @@ class MSI < Gtk::Window
     set_window_position Gtk::Window::POS_CENTER
     show_all
   end
+
+
+  #=========================================================================
+  #
+  # UI functions
+  #
+  #=========================================================================
 
   def setImage
     str = @pixbuf.pixels
@@ -89,20 +108,330 @@ class MSI < Gtk::Window
     end
   end
 
+
+  #=========================================================================
+  #
+  # GDK drawing functions
+  #
+  #=========================================================================
+
+  def drawPoint(pixbuf, x, y, r, g=0, b=0)
+    stride = pixbuf.rowstride
+    i = x * 3 + y * stride
+    str = pixbuf.pixels
+    str.setbyte(i+0, r)
+    str.setbyte(i+1, g)
+    str.setbyte(i+2, b)
+    pixbuf.pixels = str
+  end
+
+  def drawRect(pixbuf, x, y, w, h, r, g=0, b=0)
+    stride = pixbuf.rowstride
+    str = pixbuf.pixels
+    for xx in 0...w
+      for yy in 0...h
+        i = (x + xx) * 3 + (y + yy) * stride
+        str.setbyte(i+0, r)
+        str.setbyte(i+1, g)
+        str.setbyte(i+2, b)
+      end
+    end
+    pixbuf.pixels = str
+  end
+
   def edgifyImage
     mat = pixbufToCv(@pixbuf)
     mat2 = mat.canny(50, 150)
     @image.pixbuf = cvToPixbuf(mat2).scale(280, 280, Gdk::Pixbuf::INTERP_NEAREST)
+    imageSimilarity(mat, mat)
+  end
+
+  #=========================================================================
+  #
+  # Glossary
+  #
+  #=========================================================================
+  #
+  # Image - grayscale matrich
+  # Edges - binary matrix with pixels on edges set to 1
+  # Contour - set of points on the edges
+  # Shape context - histogram of relative positions of other points in
+  #contour
+  # Shape estimator - hash of { point => shape context }
+  #
+
+
+  #=========================================================================
+  #
+  # Image/shape similarity functions
+  #
+  #=========================================================================
+
+  def matchEstimators(ca, cb)
+    if ca.length != cb.length
+      raise "Estimators of different length"
+    end
+    ml = min(ca.length, cb.length)
+    caa = ca.to_a
+    cba = cb.to_a
+    distances = CvMat.new(ml, ml, :cv32f, 1).clear! # angle x log(distance)
+    for i in 0...ml
+      for j in i...ml
+        d = chisquare(caa[i][1], cba[j][1])
+        distances[i, j] = CvScalar.new(d)
+        distances[j, i] = CvScalar.new(d)
+      end
+    end
+    # pp cvmat_to_matrix(distances)
+    # pp cvmat_to_matrix(distances.diag)
+
+    h = Hungarian.new
+    solution = h.solve(cvmat_to_matrix(distances))
+    return solution.map{|p|
+      a = caa[p[0]]
+      b = cba[p[1]]
+      [a[0], b[0], distances[p[0], p[1]]]
+    }
+  end
+
+  def imageSimilarity(ia, ib)
+    sea = imageShapeEstimator(ia)
+    seb = imageShapeEstimator(ib)
+    shapeSimilarity(sea, seb)
+  end
+
+  def shapeSimilarity(ca, cb)
+    matched = matchEstimators(ca, cb)
+    return matched.map{|match|
+      match[2][1]
+    }.reduce(:+)
+  end
+
+  def imageShapeEstimator(image)
+    mat2 = image.canny(50, 150)
     shapeEstimator(mat2)
   end
+
+  def shapeEstimator(mat)
+    contour = pruneContour(getContour(mat), 30)
+    estimator = {}
+
+    # for p in contour
+    #   drawRect(@image.pixbuf, p[0] * 10, p[1] * 10, 10, 10, 255)
+    # end
+
+    for p in contour
+      estimator[p] = getShapeContext(p, contour)
+    end
+    return estimator
+  end
+
+  #=========================================================================
+  #
+  # Shape context functions
+  #
+  #=========================================================================
+
+  def chisquare(a, b)
+    w = a.width
+    h = a.height
+    s = 0
+    for row in 0...h
+      for column in 0...w
+        aa = a[row,column][0]
+        bb = b[row,column][0]
+        s += aa+bb > 0 ? ((aa-bb)**2)/(aa+bb) : 0
+      end
+    end
+    return s
+  end
+
+  def getShapeContext(point, contour)
+    sc = CvMat.new(12, 5, :cv32f, 1) # angle x log(distance)
+    sc.clear!
+    max_dist = 0
+    for p in contour
+      d = distance(point, p)
+      max_dist = max(d, max_dist)
+    end
+    log_max_dist = log(max_dist)
+    # printf "max distance %f, log %f\n", max_dist, log_max_dist
+
+    for p in contour
+      if p == point
+        next
+      end
+      d = distance(point, p)
+      a = angle(point, p)
+      # printf "distance %f, log %f, angle %f\n", d, log(d), a
+      dbin = min(((Math.log(d) / (log_max_dist)) * 5).truncate, 4)
+      abin = min((((a + (Math::PI/2)) / Math::PI) * 12).truncate, 11)
+      # printf "abin %d dbin %d\n", abin, dbin
+      sc[abin, dbin] -= (-1)
+    end
+    sc /= sc.sum
+    return sc
+  end
+
+  #=========================================================================
+  #
+  # geometry functions
+  #
+  #=========================================================================
+
+  def distance(p1, p2)
+    return Math.hypot((p1[0] - p2[0]).abs, (p1[1] - p2[1]).abs)
+  end
+
+  def angle(p1, p2)
+    dx = p1[0] - p2[0]
+    dy = p1[1] - p2[1]
+    if dx == 0 and dy == 0
+      return 0
+    end
+    return atan(dy.to_f / dx.to_f)
+  end
+
+  #=========================================================================
+  #
+  # contour functions
+  #
+  #=========================================================================
+
+  def getContour(mat)
+    contour = []
+    w = mat.width
+    h = mat.height
+    for y in 0...h
+      for x in 0...w
+        if mat[x, y][0] > 0
+          contour.push([x,y])
+        end
+      end
+    end
+    printf("%d edge points\n", contour.length)
+    return contour
+  end
+
+
+  def pruneContour(contour, n)
+    # distances = {}
+    # for i in contour
+    #   ds = 0
+    #   for j in contour
+    #     d = distance(i, j)
+    #     ds += d < 5 ? d : 0
+    #   end
+    #   distances[i] = ds
+    # end
+
+    while contour.length > n
+      min = contour[0]
+      min_dist = 1000
+
+      for i in contour
+        for j in contour
+          break if i == j
+          d = distance(i, j)
+          if distance(i, j) < min_dist
+            min = i
+            min_dist = d
+          end
+        end
+      end
+      contour.delete(min)
+    end
+    return contour
+  end
+
+  def advancedContours(mat)
+    contour = mat.find_contours({:mode => :ccomp})
+    # puts contour.class
+    #puts contour[0].class
+    # puts contour.length
+    c = 255
+    while true
+      for p in contour
+        for x in 0...10
+          for y in 0...10
+            drawPoint(@image.pixbuf, (p.y * 10) + x, (p.x * 10) + y, c)
+          end
+        end
+      end
+      contour = contour.v_next
+      # puts contour.class
+      break if contour.nil?
+      c = (c / 1.5).truncate
+    end
+    return
+  end
+
+  def pruneContourPreferOutliers(contour, n)
+    distances = {}
+    for i in contour
+      ds = 0
+      for j in contour
+        d = distance(i, j)
+        ds += sqrt(d)
+      end
+      distances[i] = ds
+    end
+
+    distances = distances.to_a.sort {|a,b| a[1] <=> b[1]}
+
+    while contour.length > n
+      contour.delete(distances.shift[0])
+    end
+    return contour
+  end
+
+  #=========================================================================
+  #
+  # cvmat utility functions
+  #
+  #=========================================================================
+
+
+  def cvmat_to_matrix(cvmat)
+    r = []
+    cvmat.each_row {|row|
+      w = row.width
+      rr = Array.new(w)
+      for i in 0...w
+        rr[i] = row[i][0]
+      end
+      r.push(rr)
+    }
+    return r
+  end
+
+  def matrix_to_cvmat(matrix, type=:cv8u, channels=1)
+    h = matrix.length
+    w = h ? matrix[0].length : 0
+    cvmat = CvMat.new(w, h, type, channels)
+    for y in 0...h
+      r = matrix[y]
+      for x in 0...w
+        cvmat[x, y] = r[x]
+      end
+    end
+    return cvmat
+  end
+
+
+  #=========================================================================
+  #
+  # CV / GTK/GDK utility functions
+  #
+  #=========================================================================
 
   def pixbufToCv(pixbuf)
     stride = pixbuf.rowstride
     w = pixbuf.height
     h = pixbuf.width
     image = CvMat.new(w, h, :cv8u, 1).clear!
-    for y in 0..(h-1)
-      for x in 0..(w-1)
+    for y in 0...h
+      for x in 0...w
         i = x * 3 + y * stride
         # puts i, pixbuf.pixels[i].getbyte(0)
         # image[x, y] = @image_test[@current][i].getbyte(0)
@@ -123,8 +452,8 @@ class MSI < Gtk::Window
     # puts w, h, stride
     # puts pixbuf.pixels.length
     str = pixbuf.pixels
-    for y in 0..(h-1)
-      for x in 0..(w-1)
+    for y in 0...h
+      for x in 0...w
         v = image[x, y][0].truncate
         # printf('%3d ', v)
         i = x * 3 + y * stride
@@ -138,54 +467,6 @@ class MSI < Gtk::Window
     return pixbuf
   end
 
-  def shapeEstimator(mat)
-    contour = getCountour(mat)
-    estimator = {}
-    print contour
-  end
-
-  def getShapeContext(point, countour)
-    sc = CvMat.new(12, 5, :cv8u, 1) # angle x log(distance)
-    max_dist = 0
-    for p in contour
-      d = distance(point, p)
-      max_dist = Math.min(d, max_dist)
-    end
-    log_max_dist = Math.log(max_dist)
-
-    for p in contour
-      d = distance(point, p)
-      a = angle(point, p)
-      dbin = ((Math.log(d) / log_max_dist) * 5).truncate
-      abin = ((Math::PI / a) * 12).truncate
-      sc[abin, dbin] += 1
-    end
-  end
-
-  def distance(p1, p2)
-    return Math.hypot(Math.abs(p1[0] - p2[0]), Math.abs(p1[1] - p2[1]))
-  end
-
-  def angle(p1, p2)
-    dx = p1[0] - p2[0];
-    dy = p1[1] - p2[1];
-    return atan2(dy, dx);
-  end
-
-  def getCountour(mat)
-    contour = []
-    w = mat.width
-    h = mat.height
-    for y in 0..(h-1)
-      for x in 0..(w-1)
-        if mat[x, y][0] > 0
-          contour.push([x,y])
-        end
-      end
-    end
-    printf("%d edge points\n", contour.length)
-    return contour
-  end
 
 end
 
