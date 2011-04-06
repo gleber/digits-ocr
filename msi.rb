@@ -3,6 +3,9 @@ require 'gtk2'
 
 require 'opencv'
 include OpenCV
+$LOAD_PATH << './'
+
+require 'hungarian'
 
 class MSI < Gtk::Window
 
