@@ -74,8 +74,10 @@ class MSI < Gtk::Window
     #@label_train = loadIDX(FILE_LABEL_TRAIN)
     @image_test = loadIDX(FILE_IMAGE_TEST)
     @label_test = loadIDX(FILE_LABEL_TEST)
+    @image_test_estimators = []
     @current = 3
     @edge = true
+    @compare_to = nil
 
     @pixbuf = Gdk::Pixbuf.new(Gdk::Pixbuf::COLORSPACE_RGB, false, 8, 28, 28)
     @image = Gtk::Image.new @pixbuf.scale(280,280,Gdk::Pixbuf::INTERP_NEAREST)
@@ -91,6 +93,7 @@ class MSI < Gtk::Window
       when 'Escape' then Gtk.main_quit
       when 'F1' then @edge = !@edge; setImage;
       when 'l' then learn;
+      when 'c' then @compare_to = @current
       when 'Right' then @current += 1; @current = 0 if @current == @image_test.size; setImage;
       when 'Left' then @current -= 1; @current = @image_test.size-1 if @current < 0; setImage;
       end
@@ -185,7 +188,16 @@ class MSI < Gtk::Window
     mat = OCR.pixbufToCv(@pixbuf)
     mat2 = mat.canny(50, 150)
     @image.pixbuf = OCR.cvToPixbuf(mat2).scale(280, 280, Gdk::Pixbuf::INTERP_NEAREST)
-    # imageSimilarity(mat, mat)
+    if @image_test_estimators[@current].nil?
+      @image_test_estimators[@current] = createImageSample(@current)
+    end
+    puts @compare_to
+    if @compare_to
+      printf("Similarity between %d and %d: %f\n",
+             @compare_to,
+             @current,
+             @image_test_estimators[@current].compare(@image_test_estimators[@compare_to]))
+    end
   end
 
   #=========================================================================
