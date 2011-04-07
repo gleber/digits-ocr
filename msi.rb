@@ -10,6 +10,7 @@ include Math
 $LOAD_PATH << './'
 
 require 'hungarian'
+require 'kmeans'
 
 def max(a, b)
   a > b ? a : b
@@ -28,14 +29,24 @@ class ImageSample
     for y in 0...h
       for x in 0...w
         i = x + y * stride
-        v = pixels[i]
-        printf('%3d ', v)
+        v = pixels[i].getbyte(0)
         @mat[x, y] = v
       end
-      puts
     end
     @edge = @mat.canny(50, 150)
     @medoid = nil
+  end
+
+  def medoid
+    @medoid
+  end
+
+  def medoid=(val)
+    @medoid = val
+  end
+
+  def estimator
+    @estimator
   end
 
   def create_estimator
@@ -43,7 +54,9 @@ class ImageSample
   end
 
   def compare(other)
-    OCR.matchEstimators(@estimator, other.estimator)
+    r = OCR.matchEstimators(@estimator, other.estimator)
+    # pp r
+    r.map{|x| x[2][0]}.reduce(:+)
   end
 end
 
@@ -77,6 +90,7 @@ class MSI < Gtk::Window
       case Gdk::Keyval.to_name(e.keyval)
       when 'Escape' then Gtk.main_quit
       when 'F1' then @edge = !@edge; setImage;
+      when 'l' then learn;
       when 'Right' then @current += 1; @current = 0 if @current == @image_test.size; setImage;
       when 'Left' then @current -= 1; @current = @image_test.size-1 if @current < 0; setImage;
       end
@@ -168,10 +182,10 @@ class MSI < Gtk::Window
   end
 
   def edgifyImage
-    mat = pixbufToCv(@pixbuf)
+    mat = OCR.pixbufToCv(@pixbuf)
     mat2 = mat.canny(50, 150)
-    @image.pixbuf = cvToPixbuf(mat2).scale(280, 280, Gdk::Pixbuf::INTERP_NEAREST)
-    imageSimilarity(mat, mat)
+    @image.pixbuf = OCR.cvToPixbuf(mat2).scale(280, 280, Gdk::Pixbuf::INTERP_NEAREST)
+    # imageSimilarity(mat, mat)
   end
 
   #=========================================================================
@@ -195,29 +209,43 @@ class MSI < Gtk::Window
   #=========================================================================
 
   def learn
-    max = @label_test.length
+    max = 100 # @label_test.length
     images = {}
-    images.default = []
+    for i in 0..9
+      images[i] = []
+    end
     puts max
     for i in 0...max
-      printf("%d / %d\n", i, max)
       label = @label_test[i]
-      images[label] << createImageSample(i)      
+      if label != 1
+        next
+      end
+      printf("%d / %d - %d\n", i, max, label)
+      images[label] << createImageSample(i)
     end
-    puts
-
+    for i in images.keys.sort
+      printf("%d => %d\n", i, images[i].length)
+    end
     @prototypes = selectPrototypes(images)
+    #pp @prototypes
   end
 
-  def selectPrototype
+  def selectPrototypes(images)
     proto = {}
-    for 0..9
-      k_means(images, 
+    for i in [1]
+      printf("Clustering %d - %d elements...", i, images[i].length)
+      km = KMeans.new(images[i], 14)
+      protos = km.cluster.map {|p| images[i][p]}
+      proto[i] = protos
+      printf(" done\n")
     end
+    proto
   end
 
   def createImageSample(i)
-    ImageSample(@image_test[i], @label_test[i])
+    is = ImageSample.new(@image_test[i], @label_test[i])
+    is.create_estimator
+    is
   end
 
 end
@@ -371,7 +399,7 @@ module OCR
         end
       end
     end
-    printf("%d edge points\n", contour.length)
+    # printf("%d edge points\n", contour.length)
     return contour
   end
 
