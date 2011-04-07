@@ -222,9 +222,9 @@ class MSI < Gtk::Window
 
   def learn
     max = 100 # @label_test.length
-    images = {}
+    @images = {}
     for i in 0..9
-      images[i] = []
+      @images[i] = []
     end
     puts max
     for i in 0...max
@@ -233,12 +233,14 @@ class MSI < Gtk::Window
         next
       end
       printf("%d / %d - %d\n", i, max, label)
-      images[label] << createImageSample(i)
+      is = createImageSample(i)
+      @image_test_estimators[i] = is
+      @images[label] << is
     end
-    for i in images.keys.sort
-      printf("%d => %d\n", i, images[i].length)
+    for i in @images.keys.sort
+      printf("%d => %d\n", i, @images[i].length)
     end
-    @prototypes = selectPrototypes(images)
+    @prototypes = selectPrototypes(@images)
     #pp @prototypes
   end
 
