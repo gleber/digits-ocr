@@ -19,6 +19,34 @@ def min(a, b)
   a < b ? a : b
 end
 
+class ImageSample
+  def initialize(pixels, label)
+    stride = 28
+    w = 28
+    h = 28
+    @mat = CvMat.new(w, h, :cv8u, 1).clear!
+    for y in 0...h
+      for x in 0...w
+        i = x + y * stride
+        v = pixels[i]
+        printf('%3d ', v)
+        @mat[x, y] = v
+      end
+      puts
+    end
+    @edge = @mat.canny(50, 150)
+    @medoid = nil
+  end
+
+  def create_estimator
+    @estimator = OCR.shapeEstimator(@edge)
+  end
+
+  def compare(other)
+    OCR.matchEstimators(@estimator, other.estimator)
+  end
+end
+
 class MSI < Gtk::Window
 
   FILE_IMAGE_TRAIN = 'train-images.idx3-ubyte'
@@ -156,18 +184,52 @@ class MSI < Gtk::Window
   # Edges - binary matrix with pixels on edges set to 1
   # Contour - set of points on the edges
   # Shape context - histogram of relative positions of other points in
-  #contour
+  #                 contour
   # Shape estimator - hash of { point => shape context }
   #
 
+  #=========================================================================
+  #
+  # Learning
+  #
+  #=========================================================================
 
+  def learn
+    max = @label_test.length
+    images = {}
+    images.default = []
+    puts max
+    for i in 0...max
+      printf("%d / %d\n", i, max)
+      label = @label_test[i]
+      images[label] << createImageSample(i)      
+    end
+    puts
+
+    @prototypes = selectPrototypes(images)
+  end
+
+  def selectPrototype
+    proto = {}
+    for 0..9
+      k_means(images, 
+    end
+  end
+
+  def createImageSample(i)
+    ImageSample(@image_test[i], @label_test[i])
+  end
+
+end
+
+module OCR
   #=========================================================================
   #
   # Image/shape similarity functions
   #
   #=========================================================================
 
-  def matchEstimators(ca, cb)
+  def self.matchEstimators(ca, cb)
     if ca.length != cb.length
       raise "Estimators of different length"
     end
@@ -194,25 +256,25 @@ class MSI < Gtk::Window
     }
   end
 
-  def imageSimilarity(ia, ib)
+  def self.imageSimilarity(ia, ib)
     sea = imageShapeEstimator(ia)
     seb = imageShapeEstimator(ib)
     shapeSimilarity(sea, seb)
   end
 
-  def shapeSimilarity(ca, cb)
+  def self.shapeSimilarity(ca, cb)
     matched = matchEstimators(ca, cb)
     return matched.map{|match|
       match[2][1]
     }.reduce(:+)
   end
 
-  def imageShapeEstimator(image)
+  def self.imageShapeEstimator(image)
     mat2 = image.canny(50, 150)
     shapeEstimator(mat2)
   end
 
-  def shapeEstimator(mat)
+  def self.shapeEstimator(mat)
     contour = pruneContour(getContour(mat), 30)
     estimator = {}
 
@@ -232,7 +294,7 @@ class MSI < Gtk::Window
   #
   #=========================================================================
 
-  def chisquare(a, b)
+  def self.chisquare(a, b)
     w = a.width
     h = a.height
     s = 0
@@ -246,7 +308,7 @@ class MSI < Gtk::Window
     return s
   end
 
-  def getShapeContext(point, contour)
+  def self.getShapeContext(point, contour)
     sc = CvMat.new(12, 5, :cv32f, 1) # angle x log(distance)
     sc.clear!
     max_dist = 0
@@ -279,11 +341,11 @@ class MSI < Gtk::Window
   #
   #=========================================================================
 
-  def distance(p1, p2)
+  def self.distance(p1, p2)
     return Math.hypot((p1[0] - p2[0]).abs, (p1[1] - p2[1]).abs)
   end
 
-  def angle(p1, p2)
+  def self.angle(p1, p2)
     dx = p1[0] - p2[0]
     dy = p1[1] - p2[1]
     if dx == 0 and dy == 0
@@ -298,7 +360,7 @@ class MSI < Gtk::Window
   #
   #=========================================================================
 
-  def getContour(mat)
+  def self.getContour(mat)
     contour = []
     w = mat.width
     h = mat.height
@@ -314,7 +376,7 @@ class MSI < Gtk::Window
   end
 
 
-  def pruneContour(contour, n)
+  def self.pruneContour(contour, n)
     # distances = {}
     # for i in contour
     #   ds = 0
@@ -344,7 +406,7 @@ class MSI < Gtk::Window
     return contour
   end
 
-  def advancedContours(mat)
+  def self.advancedContours(mat)
     contour = mat.find_contours({:mode => :ccomp})
     # puts contour.class
     #puts contour[0].class
@@ -354,7 +416,7 @@ class MSI < Gtk::Window
       for p in contour
         for x in 0...10
           for y in 0...10
-            drawPoint(@image.pixbuf, (p.y * 10) + x, (p.x * 10) + y, c)
+            # drawPoint(@image.pixbuf, (p.y * 10) + x, (p.x * 10) + y, c)
           end
         end
       end
@@ -366,7 +428,7 @@ class MSI < Gtk::Window
     return
   end
 
-  def pruneContourPreferOutliers(contour, n)
+  def self.pruneContourPreferOutliers(contour, n)
     distances = {}
     for i in contour
       ds = 0
@@ -392,7 +454,7 @@ class MSI < Gtk::Window
   #=========================================================================
 
 
-  def cvmat_to_matrix(cvmat)
+  def self.cvmat_to_matrix(cvmat)
     r = []
     cvmat.each_row {|row|
       w = row.width
@@ -405,7 +467,7 @@ class MSI < Gtk::Window
     return r
   end
 
-  def matrix_to_cvmat(matrix, type=:cv8u, channels=1)
+  def self.matrix_to_cvmat(matrix, type=:cv8u, channels=1)
     h = matrix.length
     w = h ? matrix[0].length : 0
     cvmat = CvMat.new(w, h, type, channels)
@@ -425,7 +487,7 @@ class MSI < Gtk::Window
   #
   #=========================================================================
 
-  def pixbufToCv(pixbuf)
+  def self.pixbufToCv(pixbuf)
     stride = pixbuf.rowstride
     w = pixbuf.height
     h = pixbuf.width
@@ -444,7 +506,7 @@ class MSI < Gtk::Window
     return image
   end
 
-  def cvToPixbuf(image)
+  def self.cvToPixbuf(image)
     pixbuf = Gdk::Pixbuf.new(Gdk::Pixbuf::COLORSPACE_RGB, false, 8, image.width, image.height)
     stride = pixbuf.rowstride
     w = pixbuf.width
