@@ -271,6 +271,9 @@ module OCR
   #
   #=========================================================================
 
+  # estymator gestosci prawdopodobienstwa dla poszczegolnych klas cyfr
+  # w zaleznosci od odleglosci od centrow klastrow
+  
   def self.matchEstimators(ca, cb)
     if ca.length != cb.length
       raise "Estimators of different length"
@@ -291,6 +294,7 @@ module OCR
 
     h = Hungarian.new
     solution = h.solve(cvmat_to_matrix(distances))
+    
     return solution.map{|p|
       a = caa[p[0]]
       b = cba[p[1]]
@@ -317,10 +321,10 @@ module OCR
   end
 
   def self.shapeEstimator(mat)
-    cnt = getContour(mat),
-    center = cnt.reduce {|memo,x| [memo[0]+x[0], memo[1]+x[1]]}
-    center[0] /= cnt.length
-    center[1] /= cnt.length
+    cnt = getContour(mat)
+    # center = cnt.reduce {|memo,x| [memo[0]+x[0], memo[1]+x[1]]}
+    # center[0] /= cnt.length
+    # center[1] /= cnt.length
     contour = pruneContour(cnt, 30)
     estimator = {}
 
@@ -329,7 +333,7 @@ module OCR
     # end
 
     for p in contour
-      estimator[p] = getShapeContext(p, contour, center)
+      estimator[p] = getShapeContext(p, contour) # , center
     end
     return estimator
   end
@@ -354,7 +358,7 @@ module OCR
     return s
   end
 
-  def self.getShapeContext(point, contour, center)
+  def self.getShapeContext(point, contour, center=nil)
     sc = CvMat.new(12, 5, :cv32f, 1) # angle x log(distance)
     sc.clear!
     max_dist = 0
