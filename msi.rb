@@ -10,7 +10,7 @@ include Math
 $LOAD_PATH << './'
 
 require 'hungarian'
-require 'kmeans'
+require 'kmedoid'
 
 def max(a, b)
   a > b ? a : b
@@ -21,7 +21,9 @@ def min(a, b)
 end
 
 class ImageSample
-  def initialize(pixels, label)
+  def initialize(id, pixels, label)
+    @id = id
+    @label = label
     stride = 28
     w = 28
     h = 28
@@ -37,6 +39,10 @@ class ImageSample
     @medoid = nil
   end
 
+  def id
+    @id
+  end
+  
   def medoid
     @medoid
   end
@@ -46,6 +52,7 @@ class ImageSample
   end
 
   def estimator
+    create_estimator unless @estimator
     @estimator
   end
 
@@ -58,23 +65,170 @@ class ImageSample
     # pp r
     r.map{|x| x[2][0]}.reduce(:+)
   end
+
+  def marshal_dump
+    [@id,
+     @label,
+     OCR.cvmat_to_matrix(@mat),
+     OCR.cvmat_to_matrix(@edge),
+     @medoid,
+     @estimator.each_with_object({}) { |(k,v),h|
+       h[k] = OCR.cvmat_to_matrix(v)
+     }]
+  end
+
+  def marshal_load(array)
+    @id = array[0]
+    @label = array[1]
+    @mat = OCR.matrix_to_cvmat(array[2])
+    @edge = OCR.matrix_to_cvmat(array[3])
+    @medoid = array[4]
+    @estimator = array[5].each_with_object({}) { |(k,v),h|
+      h[k] = OCR.matrix_to_cvmat(v, :cv32f)
+    }
+  end
 end
 
-class MSI < Gtk::Window
-
+class Dataset
   FILE_IMAGE_TRAIN = 'train-images.idx3-ubyte'
   FILE_LABEL_TRAIN = 'train-labels.idx1-ubyte'
   FILE_IMAGE_TEST = 't10k-images-idx3-ubyte'
   FILE_LABEL_TEST = 't10k-labels-idx1-ubyte'
 
   def initialize
-    super
-
-    #@image_train = loadIDX(FILE_IMAGE_TRAIN)
-    #@label_train = loadIDX(FILE_LABEL_TRAIN)
     @image_test = loadIDX(FILE_IMAGE_TEST)
     @label_test = loadIDX(FILE_LABEL_TEST)
     @image_test_estimators = []
+    @cached_distances = {}
+  end
+
+  def write
+    File.open("estimators.db", "wb") do |file|
+      Marshal.dump([@image_test_estimators,
+                    @prototypes,
+                    @cached_distances], file)
+    end
+  rescue
+    puts "can't write to file"
+  end
+
+  def read
+    File.open("estimators.db", "rb") do |file|
+      ar = Marshal.load(file)
+      @image_test_estimators = ar[0]
+      @prototypes = []
+      @cached_distances = ar[2]
+    end
+  rescue
+    puts "can't read file"
+  end
+  
+  def loadIDX(filename)
+    x = 0
+    File.open(filename, "rb") do |file|
+      buf = file.read(3)
+      # check for magic number (and data type)
+      raise 'ERROR: Invalid file (not IDX Vector File)' unless buf == "\000\000\010"
+      # get number of dimensions
+      dim = file.getbyte
+      # check for dimension count
+      raise 'ERROR: Unexpected number of dimensions' unless dim > 0
+      count = file.read(4).unpack('N')[0]
+      ary = Array.new(count)
+      if dim == 1
+        # load label data
+        ary.size.times do |i|
+          ary[i] = file.getbyte
+        end
+      elsif dim == 3
+        w = file.read(4).unpack('N')[0]
+        h = file.read(4).unpack('N')[0]
+        ary.size.times do |i|
+          ary[i] = file.read(w*h)
+        end
+      else
+        raise 'ERROR: Unexpected number of dimensions'
+      end
+      # check for expected end of file
+      raise 'ERROR: Excessive data in file' unless file.getbyte().nil?
+      return ary
+    end
+  end
+
+
+  #=========================================================================
+  #
+  # Glossary
+  #
+  #=========================================================================
+  #
+  # Image - grayscale matrich
+  # Edges - binary matrix with pixels on edges set to 1
+  # Contour - set of points on the edges
+  # Shape context - histogram of relative positions of other points in
+  #                 contour
+  # Shape estimator - hash of { point => shape context }
+  #
+
+  #=========================================================================
+  #
+  # Learning
+  #
+  #=========================================================================
+
+  def learn
+    len = @label_test.length
+    @images = {}
+    for i in 0..9
+      @images[i] = []
+    end
+    puts len
+    for i in 0...len
+      label = @label_test[i]
+      if label != 1
+        next
+      end
+      printf("%d / %d - %d\n", i, len, label)
+      @images[label] << image_sample(i)
+    end
+    for i in @images.keys.sort
+      printf("%d => %d\n", i, @images[i].length)
+    end
+    @prototypes = []
+    @prototypes = selectPrototypes(@images)
+    # pp @prototypes
+  end
+
+  def image_sample(i)
+    @image_test_estimators[i] = createImageSample(i) unless @image_test_estimators[i]
+    @image_test_estimators[i]
+  end
+
+  def selectPrototypes(images)
+    proto = {}
+    for i in [1]
+      printf("Clustering %d - %d elements...", i, images[i].length)
+      km = KMedoid.new(images[i], 10, @cached_distances)
+      protos = km.cluster.map {|p| images[i][p]}
+      proto[i] = protos
+      printf(" done\n")
+      pp protos.map {|i| i.id}
+    end
+    proto
+  end
+
+  def createImageSample(i)
+    is = ImageSample.new(i, @image_test[i], @label_test[i])
+    is.create_estimator
+    is
+  end
+end
+
+class MSI < Gtk::Window
+
+  def initialize(dataset)
+    super
+    @dataset = dataset
     @current = 3
     @edge = true
     @compare_to = nil
@@ -118,38 +272,6 @@ class MSI < Gtk::Window
     set_title("MSI, img ##{@current} => #{@label_test[@current]}")
     if @edge
       edgifyImage
-    end
-  end
-
-  def loadIDX(filename)
-    x = 0
-    File.open(filename, "rb") do |file|
-      buf = file.read(3)
-      # check for magic number (and data type)
-      raise 'ERROR: Invalid file (not IDX Vector File)' unless buf == "\000\000\010"
-      # get number of dimensions
-      dim = file.getbyte
-      # check for dimension count
-      raise 'ERROR: Unexpected number of dimensions' unless dim > 0
-      count = file.read(4).unpack('N')[0]
-      ary = Array.new(count)
-      if dim == 1
-        # load label data
-        ary.size.times do |i|
-          ary[i] = file.getbyte
-        end
-      elsif dim == 3
-        w = file.read(4).unpack('N')[0]
-        h = file.read(4).unpack('N')[0]
-        ary.size.times do |i|
-          ary[i] = file.read(w*h)
-        end
-      else
-        raise 'ERROR: Unexpected number of dimensions'
-      end
-      # check for expected end of file
-      raise 'ERROR: Excessive data in file' unless file.getbyte().nil?
-      return ary
     end
   end
 
@@ -199,69 +321,7 @@ class MSI < Gtk::Window
              @image_test_estimators[@current].compare(@image_test_estimators[@compare_to]))
     end
   end
-
-  #=========================================================================
-  #
-  # Glossary
-  #
-  #=========================================================================
-  #
-  # Image - grayscale matrich
-  # Edges - binary matrix with pixels on edges set to 1
-  # Contour - set of points on the edges
-  # Shape context - histogram of relative positions of other points in
-  #                 contour
-  # Shape estimator - hash of { point => shape context }
-  #
-
-  #=========================================================================
-  #
-  # Learning
-  #
-  #=========================================================================
-
-  def learn
-    max = 100 # @label_test.length
-    @images = {}
-    for i in 0..9
-      @images[i] = []
-    end
-    puts max
-    for i in 0...max
-      label = @label_test[i]
-      if label != 1
-        next
-      end
-      printf("%d / %d - %d\n", i, max, label)
-      is = createImageSample(i)
-      @image_test_estimators[i] = is
-      @images[label] << is
-    end
-    for i in @images.keys.sort
-      printf("%d => %d\n", i, @images[i].length)
-    end
-    @prototypes = selectPrototypes(@images)
-    #pp @prototypes
-  end
-
-  def selectPrototypes(images)
-    proto = {}
-    for i in [1]
-      printf("Clustering %d - %d elements...", i, images[i].length)
-      km = KMeans.new(images[i], 14)
-      protos = km.cluster.map {|p| images[i][p]}
-      proto[i] = protos
-      printf(" done\n")
-    end
-    proto
-  end
-
-  def createImageSample(i)
-    is = ImageSample.new(@image_test[i], @label_test[i])
-    is.create_estimator
-    is
-  end
-
+  
 end
 
 module OCR
@@ -524,7 +584,7 @@ module OCR
     for y in 0...h
       r = matrix[y]
       for x in 0...w
-        cvmat[x, y] = r[x]
+        cvmat[x, y] = CvScalar.new(r[x])
       end
     end
     return cvmat
@@ -582,6 +642,20 @@ module OCR
 
 end
 
-Gtk.init
-  window = MSI.new
-Gtk.main
+dataset = Dataset.new
+dataset.read
+
+if ARGV.length == 0
+  Gtk.init
+  window = MSI.new(dataset)
+  Gtk.main
+else
+  case ARGV[0]
+  when "learn"
+    puts "learn"
+    dataset.learn
+    dataset.write
+  when "read"
+    puts "already read"
+  end
+end
