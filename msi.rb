@@ -100,13 +100,16 @@ class Dataset
     @label_test = loadIDX(FILE_LABEL_TEST)
     @image_test_estimators = []
     @cached_distances = {}
+    @counter = 0
   end
 
   def write
     File.open("estimators.db", "wb") do |file|
+      printf "Writing database... "
       Marshal.dump([@image_test_estimators,
                     @prototypes,
                     @cached_distances], file)
+      puts "done"
     end
   rescue
     puts "can't write to file"
@@ -114,7 +117,9 @@ class Dataset
 
   def read
     File.open("estimators.db", "rb") do |file|
+      puts "Reading"
       ar = Marshal.load(file)
+      puts "done"
       @image_test_estimators = ar[0]
       @prototypes = []
       @cached_distances = ar[2]
@@ -185,11 +190,17 @@ class Dataset
     puts len
     for i in 0...len
       label = @label_test[i]
-      if label != 1
+      # if label != 1
+      #   next
+      # end
+      if @images[label].length == 100
         next
       end
       printf("%d / %d - %d\n", i, len, label)
       @images[label] << image_sample(i)
+      if @counter > 0 and @counter.modulo(100) == 0
+        write
+      end
     end
     for i in @images.keys.sort
       printf("%d => %d\n", i, @images[i].length)
@@ -205,11 +216,20 @@ class Dataset
   end
 
   def selectPrototypes(images)
+    database = self
     proto = {}
-    for i in [1]
+    t = Time.now.to_i
+    for i in 0..9
       printf("Clustering %d - %d elements...", i, images[i].length)
       km = KMedoid.new(images[i], 10, @cached_distances)
-      protos = km.cluster.map {|p| images[i][p]}
+      protos = km.cluster {
+        now = Time.now.to_i
+        if now > t + 120
+          database.write
+          t = now
+        end
+      }
+      protos.map! {|p| images[i][p]}
       proto[i] = protos
       printf(" done\n")
       pp protos.map {|i| i.id}
@@ -218,6 +238,7 @@ class Dataset
   end
 
   def createImageSample(i)
+    @counter += 1
     is = ImageSample.new(i, @image_test[i], @label_test[i])
     is.create_estimator
     is

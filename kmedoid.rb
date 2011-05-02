@@ -37,10 +37,10 @@ class KMedoid
     d
   end
 
-  def cluster
+  def cluster(&blk)
     i = 0
     best_conf = @medoids.dup
-    last_cost = best_cost = cost(@nodes, best_conf)
+    last_cost = best_cost = cost(@nodes, best_conf, &blk)
     while true
       last_cost = best_cost
       for m in @medoids.each_index
@@ -52,12 +52,13 @@ class KMedoid
           if ind
             meds[ind] = old_m
           end          
-          new_cost = cost(@nodes, meds)
+          new_cost = cost(@nodes, meds, &blk)
           #pp [new_cost, meds]
           if new_cost < best_cost
             best_conf = meds
             best_cost = new_cost            
           end
+          yield if block_given?
         end
       end
       puts "New best cost", best_cost
@@ -83,6 +84,7 @@ class KMedoid
         d = cachedDistance(m, n)
         cc = min(cc, d)
       end
+      yield
       c += cc
     end
     c
