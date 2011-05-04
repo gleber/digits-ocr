@@ -1,0 +1,72 @@
+options(STERM='iESS', editor='emacsclient')
+f = read("t10k-images-idx3-ubyte", "rb")
+f = file("t10k-images-idx3-ubyte", "rb")
+readBin(f, integer(), signed=FALSE, n=3, size=1)
+readBin(f, integer(), signed=FALSE, n=1, size=1)
+ftell(f)
+tell(f)
+seek(f)
+seek(f)
+readBin(f, integer(), signed=FALSE, n=1, size=4)
+seek(f, 4)
+readBin(f, integer(), signed=FALSE, n=1, size=4, endian="little")
+seek(f, 4)
+readBin(f, integer(), signed=FALSE, n=1, size=4, endian="big")
+readBin(f, integer(), signed=FALSE, n=1, size=4, endian="big")
+readBin(f, integer(), signed=FALSE, n=1, size=4, endian="big")
+readBin(f, integer(), signed=FALSE, n=10000*28*28, size=1, endian="big")
+seek(f, 4)
+seek(f, 4)
+readBin(f, integer(), signed=FALSE, n=1, size=4, endian="big")
+readBin(f, integer(), signed=FALSE, n=1, size=4, endian="big")
+readBin(f, integer(), signed=FALSE, n=1, size=4, endian="big")
+all = readBin(f, integer(), signed=FALSE, n=10000*28*28, size=1, endian="big")
+all[1:28*28]
+all[1:(28*28)]
+all[0:(28*28)]
+all[0:(28*28)]
+all[0:(28*28)]
+all[0:(28*28)]
+all[0:(28*28)]
+help(printer)
+all[1:5]
+all[0:5]
+all[0:25]
+all[0:30]
+all[0:90]
+all[0:150]
+all[0:170]
+all[0:200]
+all[0:250]
+all[0:210]
+all[0:201]
+all[0:202]
+all[0:203]
+all[1:203]
+all[2:203]
+all[3:203]
+all[0:203]
+length(all[0:203])
+length(all[1:203])
+length(all[1:1])
+length(all[0:1])
+length(all[1:203])
+length(all[1:28*28])
+length(all[1:(28*28)])
+array(all[1:(28*28)], c(28,28,1000))
+max.print
+setOption
+getOption("max.print")
+setOption("max.print", 1000)
+options()
+options('max.print')
+options('max.print') = 1000
+options('max.print' = 1000)
+getOption("max.print")
+array(all[1:(28*28)], c(28,28,1000))
+array(all[1:(28*28)], c(28,28,1000), by.row=TRUE)
+array(all[1:(28*28)], c(28,28,1000), byrow=TRUE)
+matrix(all[1:(28*28)], c(28,28,1000), byrow=TRUE)
+matrix(all[1:(28*28)], c(28,28,1000), byrow=TRUE)
+options()
+c(1)
