@@ -104,30 +104,48 @@ class Dataset
   end
 
   def write
+    # return
+    printf "Writing database... "
     File.open("estimators.db", "wb") do |file|
-      printf "Writing database... "
-      Marshal.dump([@image_test_estimators,
-                    @prototypes,
-                    @cached_distances], file)
-      puts "done"
+      printf " estimators "
+      Marshal.dump([@image_test_estimators], file)
     end
+    File.open("prototypes.db", "wb") do |file|
+      printf " prototypes "
+      Marshal.dump([@prototypes], file)
+    end
+    File.open("distances.db", "wb") do |file|
+      printf " distances "
+      Marshal.dump([@cached_distances], file)
+    end
+    puts "done"
   rescue
     puts "can't write to file"
   end
 
   def read
+    # return
+    printf "Reading"
     File.open("estimators.db", "rb") do |file|
-      puts "Reading"
+      printf " estimators "
       ar = Marshal.load(file)
-      puts "done"
       @image_test_estimators = ar[0]
-      @prototypes = []
-      @cached_distances = ar[2]
     end
+    File.open("prototypes.db", "rb") do |file|
+      printf " prototypes "
+      ar = Marshal.load(file)
+      @prototypes = ar[0]
+    end
+    File.open("distances.db", "rb") do |file|
+      printf " distances "
+      ar = Marshal.load(file)
+      @cached_distances = ar[0]
+    end
+    puts "done"
   rescue
     puts "can't read file"
   end
-  
+
   def loadIDX(filename)
     x = 0
     File.open(filename, "rb") do |file|
