@@ -1,0 +1,10 @@
+;; This buffer is for notes you don't want to save, and for Lisp evaluation.
+;; If you want to create a file, visit that file with C-x C-f,
+;; then enter the text in that file's own buffer.
+
+canny for detecting edges - biOps.imgCanny
+k-meoids clustering for limiting number of contour points - cluster.pam
+chi-square matrix - by hand
+hungarian algorithm to compare - clue.solve_LSAP or clue.SPLP
+k-meoids clustering for selecting prototypes
+knn - for classification
