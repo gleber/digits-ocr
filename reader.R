@@ -1,22 +1,19 @@
 library('biOps')
 library('cluster')
+library('clue')
 
 docr.read.labels <- function(filename="t10k-labels-idx1-ubyte", limit=1000) {
- f = file(filename, "rb")
+  f = file(filename, "rb")
   magic = readBin(f, integer(), signed=FALSE, n=3, size=1)
   stopifnot(c(0,0,8) == c(0, 0, 8))
   type = readBin(f, integer(), signed=FALSE, n=1, size=1)
   stopifnot(type == 1)
   count = readBin(f, integer(), signed=FALSE, n=1, size=4, endian="big")
   count = min(count, limit)
-  all = readBin(f, integer(), signed=FALSE, n=(count), size=1, endian="big")
-  a = array(all[1:(1*limit)], c(1,limit))
-  l = list()
-  for (i in 1:dim(a)[3]) l[[i]] = t(a[,,i])
-  l
+  readBin(f, integer(), signed=FALSE, n=(count), size=1, endian="big")
 }
 
-reader <- function(filename="t10k-images-idx3-ubyte", limit=1000) {
+docr.read.images <- function(filename="t10k-images-idx3-ubyte", limit=1000) {
   f = file(filename, "rb")
   magic = readBin(f, integer(), signed=FALSE, n=3, size=1)
   stopifnot(c(0,0,8) == c(0, 0, 8))
@@ -36,22 +33,74 @@ reader <- function(filename="t10k-images-idx3-ubyte", limit=1000) {
 contourify <- function(img) {
   id = imagedata(img)
   idc = imgCanny(id, 1.2)
-  #edged = array(idc, dim(idc))
   c = which(idc==0, arr.ind=TRUE)
   smallified = pam(dist(c), 30)$medoids
   c[smallified,]
 }
 
-docr.learn <- function(digits=NULL, k=10) {
-  if (is.null(digits)) {
-    digits = reader()
+docr.learn <- function(all.digits=NULL, all.lbls=NULL, limit=200, k=5) {
+  if (is.null(all.digits)) {
+    all.digits = docr.read.images(limit=limit)
   }
-  contours = lapply(digits, contourify)
+  if (is.null(all.lbls)) {
+    all.lbls = docr.read.labels(limit=limit)
+  }
+  stopifnot(length(all.lbls) == length(all.digits))
+  stopifnot(limit == length(all.digits))
+  docr.last.all.lbls <<- all.lbls
+  docr.last.all.digits <<- all.digits
+  print("Contourifying")
+  contours = lapply(all.digits, contourify)
+  print("done")
+  docr.last.contours <<- contours
   gcntr <<- 0
+  print("Creating estimators")
   shests = lapply(contours, create.estimator)
-  shests.distmat = create.shapes.distmat(shests)
-  meds = pam(shests, k)$medoids
-  shests[meds]
+  print("done")
+  docr.last.shests <<- shests
+  split.and.prototype(shests, all.lbls, k=k)
+}
+
+docr.prepare.classifier <- function(prototypes) {
+  n = names(prototypes)
+  labels = list()
+  pse = list()
+  for (lbl in n) {
+    for (p in prototypes[[lbl]]) {
+      labels[[length(labels)+1]] = lbl
+      pse[[length(pse)+1]] = p
+    }
+  }
+  dist = create.shapes.distmat(pse)
+  list(as.matrix(dist), pse, 1:(length(pse)), labels)
+}
+
+docr.predict <- function(classifier, se) {
+  dm = classifier[[1]]
+  tc = classifier[[2]]
+  tr = classifier[[3]]
+  tl = classifier[[4]]
+  edm = rbind(cbind(dm, 0), 0)
+  mh = dim(edm)[1]
+  mw = dim(edm)[2]
+  for (i in 1:(mw-1)) {
+    edm[mh,i] <- estimator.distance(tc[[i]], se)
+  }
+  knn.probability(tr, dim(edm)[1], unlist(tl), edm, k=10)
+}
+
+split.and.prototype <- function(shests, lbls, k=5) {
+  spl = split(shests,lbls)
+  for (i in names(spl)) { print(c(i, length(spl[[i]]))) }
+  prototypes = list()
+  for (key in names(spl)) {
+    curdig = spl[[key]]
+    shests.distmat = create.shapes.distmat(curdig)
+    meds = pam(as.dist(shests.distmat), k)$medoids
+    prototypes[[key]] = curdig[meds]
+  }
+  docr.last.prototypes <<- prototypes
+  invisible(prototypes)
 }
 
 create.estimator <- function(c) {
@@ -83,7 +132,7 @@ create.shapes.distmat <- function(shest) {
   l = length(shest)
   for (i in 1:l) {
     for (j in i:l) {
-      print(c(i,j))
+      ## print(c(i,j))
       dd[j,i] <- estimator.distance(shest[[i]], shest[[j]])
     }
   }
