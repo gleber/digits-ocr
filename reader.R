@@ -42,15 +42,20 @@ contourify <- function(img) {
   c[smallified,]
 }
 
-docr.learn <- function() {
-  digits = reader()
+docr.learn <- function(digits=NULL, k=10) {
+  if (is.null(digits)) {
+    digits = reader()
+  }
   contours = lapply(digits, contourify)
   gcntr <<- 0
-  invisible(lapply(contours, create.estimator))
+  shests = lapply(contours, create.estimator)
+  shests.distmat = create.shapes.distmat(shests)
+  meds = pam(shests, k)$medoids
+  shests[meds]
 }
 
 create.estimator <- function(c) {
-  res = pairlist()
+  res = list()
   l = (dim(c)[1])
   gcntr <<- gcntr + 1
   print(gcntr)
@@ -64,30 +69,47 @@ create.shape.context <- function(i, c) {
   x = c[i,]
   rel = t(t(c) - x)
   conv = function(r) {
-    a = atan2(r[2], r[1])+pi
+    a = atan2(r[2], r[1])
     d = sqrt(sum((r^2)))
-    ## print(r)
-    ## print(c(a,d,log(d+1)))
     c(a,log(d+1))
   }
   res = t(apply(rel, 1, conv))
-  ## print(cbind(c,rel,res))
-  h = myhist2d(res, nbins=c(12,5), x.range=c(0,2*pi), y.range=c(0,3.703719), show=FALSE)
+  h = myhist2d(res, nbins=c(12,5), x.range=c(-pi,pi), y.range=c(0,3.703719), show=FALSE)
   h / sum(h)
 }
 
-
-estimator.distance <- function(ae, be) {
-  dd = matrix(0, ncol=length(ae), nrow=length(be))
-  for (i in 1:length(ae)) {
-    for (j in i:length(be)) {
-      dd[j,i] <- shape.context.distance(ae[[i]][[2]], be[[j]][[2]])
+create.shapes.distmat <- function(shest) {
+  dd = matrix(0, ncol=length(shest), nrow=length(shest))
+  l = length(shest)
+  for (i in 1:l) {
+    for (j in i:l) {
+      print(c(i,j))
+      dd[j,i] <- estimator.distance(shest[[i]], shest[[j]])
     }
   }
   dd
 }
 
+estimator.distance <- function(ae, be) {
+  dd = matrix(0, ncol=length(ae), nrow=length(be))
+  for (i in 1:length(ae)) {
+    for (j in i:length(be)) {
+      dd[j,i] <- shape.context.distance(ae[[i]], be[[j]])
+    }
+  }
+  ass = solve_LSAP(dd)
+  ## print(ass)
+  s = 0
+  for (i in 1:length(ass)) {
+    ## print(ae[[i]])
+    s = s + shape.context.distance(ae[[i]], be[[ass[[i]]]])
+  }
+  s
+}
+
 shape.context.distance <- function(a, b) {
+  a = a[[2]]
+  b = b[[2]]
   d = (a-b)^2 / (a+b)
   d[is.nan(d)] <- 0
   sum(d)
