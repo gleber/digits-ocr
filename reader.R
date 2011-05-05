@@ -75,7 +75,10 @@ docr.prepare.classifier <- function(prototypes) {
   list(as.matrix(dist), pse, 1:(length(pse)), labels)
 }
 
-docr.predict <- function(classifier, se) {
+docr.predict <- function(classifier, img, k=10) {
+  cont = contourify(img)
+  se = create.estimator(cont)
+  
   dm = classifier[[1]]
   tc = classifier[[2]]
   tr = classifier[[3]]
@@ -83,10 +86,11 @@ docr.predict <- function(classifier, se) {
   edm = rbind(cbind(dm, 0), 0)
   mh = dim(edm)[1]
   mw = dim(edm)[2]
+  print("1")
   for (i in 1:(mw-1)) {
     edm[mh,i] <- estimator.distance(tc[[i]], se)
   }
-  knn.probability(tr, dim(edm)[1], unlist(tl), edm, k=10)
+  knn.probability(tr, dim(edm)[1], unlist(tl), edm, k=k)
 }
 
 split.and.prototype <- function(shests, lbls, k=5) {
@@ -123,7 +127,8 @@ create.shape.context <- function(i, c) {
     c(a,log(d+1))
   }
   res = t(apply(rel, 1, conv))
-  h = myhist2d(res, nbins=c(12,5), x.range=c(-pi,pi), y.range=c(0,3.703719), show=FALSE)
+  ## account only for objects at distance at 21pixels (15x15 box)
+  h = myhist2d(res, nbins=c(12,5), x.range=c(-pi,pi), y.range=c(0,3.1), show=FALSE)
   h / sum(h)
 }
 
