@@ -156,13 +156,13 @@ estimator.distance <- function(ae, be) {
     }
   }
   ass = solve_LSAP(dd)
-  ##print(ass)
-  s = 0
-  for (i in 1:length(ass)) {
-    ## print(ae[[i]])
-    s = s + shape.context.distance(ae[[i]], be[[ass[[i]]]])
-  }
-  s  
+  ae.coords = matrix(unlist(sapply(ae, "[", 1)), ncol=2, byrow=TRUE)
+  be.coords = matrix(unlist(sapply(be, "[", 1)), ncol=2, byrow=TRUE)
+  be.assed = be.coords[ass,]
+  ## docr.ed.a <<- ae.coords
+  ## docr.ed.b <<- be.coords
+  ## docr.ed.ba <<- be.assed
+  mean(sqrt(rowSums((ae.coords - be.assed) ^ 2)))
 }
 
 shape.context.distance <- function(a, b) {
