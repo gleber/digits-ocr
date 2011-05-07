@@ -38,27 +38,29 @@ contourify <- function(img) {
   c[smallified,]
 }
 
-docr.learn <- function(all.digits=NULL, all.lbls=NULL, limit=200, k=5) {
-  if (is.null(all.digits)) {
-    all.digits = docr.read.images(limit=limit)
+docr.learn <- function(digits=NULL, lbls=NULL, limit=200, k=5, contours=NULL, estimators=NULL) {
+  if (is.null(digits) || is.null(lbls)) {
+    digits = docr.read.images(limit=limit)
+    lbls = docr.read.labels(limit=limit)
+    docr.last.lbls <<- lbls
+    docr.last.digits <<- digits
   }
-  if (is.null(all.lbls)) {
-    all.lbls = docr.read.labels(limit=limit)
+  stopifnot(length(lbls) == length(digits))
+  stopifnot(limit == length(digits))
+  if (is.null(estimators)) {
+    if (is.null(contours)) {
+      print("Contourifying")
+      contours = lapply(digits, contourify)
+      print("done")
+      docr.last.contours <<- contours
+    }
+    gcntr <<- 0
+    print("Creating estimators")
+    estimators = lapply(contours, create.estimator)
+    print("done")
+    docr.last.estimators <<- estimators
   }
-  stopifnot(length(all.lbls) == length(all.digits))
-  stopifnot(limit == length(all.digits))
-  docr.last.all.lbls <<- all.lbls
-  docr.last.all.digits <<- all.digits
-  print("Contourifying")
-  contours = lapply(all.digits, contourify)
-  print("done")
-  docr.last.contours <<- contours
-  gcntr <<- 0
-  print("Creating estimators")
-  shests = lapply(contours, create.estimator)
-  print("done")
-  docr.last.shests <<- shests
-  pr = split.and.prototype(shests, all.lbls, k=k)
+  pr = split.and.prototype(estimators, lbls, k=k)
   docr.last.prototypes <<- pr
   cl = docr.prepare.classifier(pr)
   docr.last.classifier <<- cl
@@ -82,7 +84,7 @@ docr.prepare.classifier <- function(prototypes) {
 docr.predict <- function(classifier, img, k=10) {
   cont = contourify(img)
   se = create.estimator(cont)
-  
+
   dm = classifier[[1]]
   tc = classifier[[2]]
   tr = classifier[[3]]
@@ -97,14 +99,14 @@ docr.predict <- function(classifier, img, k=10) {
   knn.probability(tr, dim(edm)[1], unlist(tl), edm, k=k)
 }
 
-split.and.prototype <- function(shests, lbls, k=5) {
-  spl = split(shests,lbls)
+split.and.prototype <- function(estimators, lbls, k=5) {
+  spl = split(estimators,lbls)
   for (i in names(spl)) { print(c(i, length(spl[[i]]))) }
   prototypes = list()
   for (key in names(spl)) {
     curdig = spl[[key]]
-    shests.distmat = create.shapes.distmat(curdig)
-    meds = pam(as.dist(shests.distmat), k)$medoids
+    estimators.distmat = create.shapes.distmat(curdig)
+    meds = pam(as.dist(estimators.distmat), k)$medoids
     prototypes[[key]] = curdig[meds]
   }
   docr.last.prototypes <<- prototypes
