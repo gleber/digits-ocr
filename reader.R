@@ -58,7 +58,10 @@ docr.learn <- function(all.digits=NULL, all.lbls=NULL, limit=200, k=5) {
   shests = lapply(contours, create.estimator)
   print("done")
   docr.last.shests <<- shests
-  split.and.prototype(shests, all.lbls, k=k)
+  pr = split.and.prototype(shests, all.lbls, k=k)
+  cl = docr.prepare.classifier(pr)
+  docr.last.classifier <<- cl
+  cl
 }
 
 docr.prepare.classifier <- function(prototypes) {
