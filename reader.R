@@ -59,6 +59,7 @@ docr.learn <- function(all.digits=NULL, all.lbls=NULL, limit=200, k=5) {
   print("done")
   docr.last.shests <<- shests
   pr = split.and.prototype(shests, all.lbls, k=k)
+  docr.last.prototypes <<- pr
   cl = docr.prepare.classifier(pr)
   docr.last.classifier <<- cl
   cl
@@ -155,13 +156,13 @@ estimator.distance <- function(ae, be) {
     }
   }
   ass = solve_LSAP(dd)
-  ## print(ass)
+  ##print(ass)
   s = 0
   for (i in 1:length(ass)) {
     ## print(ae[[i]])
     s = s + shape.context.distance(ae[[i]], be[[ass[[i]]]])
   }
-  s
+  s  
 }
 
 shape.context.distance <- function(a, b) {
