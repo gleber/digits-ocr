@@ -70,7 +70,7 @@ docr.test <- function(cl, limit=200) {
     cor.lbl = lbls[[i]]
     dig = digits[[i]]
     r = docr.predict(cl, dig)
-    pr.lbl = which.max(unlist(x)) - 1
+    pr.lbl = which.max(unlist(r)) - 1
     if (cor.lbl == pr.lbl) {
       good = good + 1
     } else {
@@ -217,12 +217,12 @@ create.shapes.distmat <- function(shest) {
   dd
 }
 
-match.contour.points <- function(ae, be, only.ind=TRUE) {
+match.contour.points <- function(ae, be, only.ind=TRUE, df=shape.context.distance) {
   l = length(ae)
   dd = matrix(0, ncol=l, nrow=l)
   for (i in 1:l) {
     for (j in i:l) {
-      dd[i,j] <- dd[j,i] <- shape.context.distance(ae[[i]], be[[j]])
+      dd[i,j] <- dd[j,i] <- df(ae[[i]], be[[j]]) ^ 2
     }
   }
   docr.last.medm <<- dd
@@ -240,7 +240,7 @@ match.contour.points <- function(ae, be, only.ind=TRUE) {
 }
 
 estimator.distance <- function(ae, be) {
-  match = match.contour.points(ae, be)
+  match = match.contour.points(ae, be, only.ind=FALSE)
   ae.coords = match[[1]]
   be.assed = match[[2]]
   if (all(ae.coords == be.assed)) {
@@ -248,6 +248,7 @@ estimator.distance <- function(ae, be) {
   }
   p = ae.coords
   q = be.assed
+  ## print(cbind(p, q))
   pp = cbind(1, p)
   qq = cbind(1, q)
   qqp = pseudoinverse(qq)
