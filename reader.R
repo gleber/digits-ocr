@@ -1,8 +1,10 @@
 library('biOps')
 library('cluster')
 library('clue')
+library('knnflex')
+library('corpcor')
 
-docr.read.labels <- function(filename="t10k-labels-idx1-ubyte", limit=1000) {
+docr.read.labels <- function(filename="train-labels-idx1-ubyte", limit=1000) {
   f = file(filename, "rb")
   magic = readBin(f, integer(), signed=FALSE, n=3, size=1)
   stopifnot(c(0,0,8) == c(0, 0, 8))
@@ -13,7 +15,7 @@ docr.read.labels <- function(filename="t10k-labels-idx1-ubyte", limit=1000) {
   readBin(f, integer(), signed=FALSE, n=(count), size=1, endian="big")
 }
 
-docr.read.images <- function(filename="t10k-images-idx3-ubyte", limit=1000) {
+docr.read.images <- function(filename="train-images-idx3-ubyte", limit=1000) {
   f = file(filename, "rb")
   magic = readBin(f, integer(), signed=FALSE, n=3, size=1)
   stopifnot(c(0,0,8) == c(0, 0, 8))
@@ -30,15 +32,71 @@ docr.read.images <- function(filename="t10k-images-idx3-ubyte", limit=1000) {
   l
 }
 
-contourify <- function(img) {
+distmat <- function(x, y, f) {
+  lx = length(x)
+  ly = length(y)
+  dd = matrix(0, ncol=lx, nrow=ly)
+  for (i in 1:lx) {
+    for (j in 1:ly) {
+      dd[j,i] = f(x[[i]], y[[j]])
+    }
+  }
+  dd
+}
+
+contourify <- function(img, k=40) {
   id = imagedata(img)
   idc = imgCanny(id, 1.2)
   c = which(idc==0, arr.ind=TRUE)
-  smallified = pam(dist(c), 30)$medoids
+  ## plot(c)
+  l = dim(c)[1]
+  if (l > k) {
+    ## print(dim(as.matrix(dist(c))))
+    smallified = pam(dist(c), k=k)$medoids
+  } else {
+    smallified = 1:k
+    c = matrix(rep(c, length.out=2*k), ncol=2)
+  }
+  dim(smallified) = k
   c[smallified,]
 }
 
-docr.learn <- function(digits=NULL, lbls=NULL, limit=200, k=5, contours=NULL, estimators=NULL) {
+docr.test <- function(cl, limit=200) {
+  lbls = docr.read.labels("t10k-labels-idx1-ubyte", limit=limit)
+  digits = docr.read.images("t10k-images-idx3-ubyte", limit=limit)
+  good = 0
+  bad = 0
+  for (i in 1:limit) {
+    cor.lbl = lbls[[i]]
+    dig = digits[[i]]
+    r = docr.predict(cl, dig)
+    pr.lbl = which.max(unlist(x)) - 1
+    if (cor.lbl == pr.lbl) {
+      good = good + 1
+    } else {
+      bad = bad + 1
+    }
+    print(c(good, bad, good / (good + bad)))
+  }
+}
+
+docr.learn <- function(digits=NULL, lbls=NULL, limit=200, k=5, contours=NULL, estimators=NULL, cache=TRUE) {
+  if (cache) {
+    print("Using cache")
+    if (is.null(digits) && exists("docr.last.digits") && length(docr.last.digits) == limit) {
+      digits = docr.last.digits
+    }
+    if (is.null(lbls) && exists("docr.last.lbls") && length(docr.last.lbls) == limit) {
+      lbls = docr.last.lbls
+    }
+    if (is.null(contours) && exists("docr.last.contours") && length(docr.last.contours) == limit) {
+      contours = docr.last.contours
+    }
+    if (is.null(estimators) && exists("docr.last.estimators") && length(docr.last.estimators) == limit) {
+      estimators = docr.last.estimators
+    }
+  }
+
   if (is.null(digits) || is.null(lbls)) {
     digits = docr.read.images(limit=limit)
     lbls = docr.read.labels(limit=limit)
@@ -58,13 +116,14 @@ docr.learn <- function(digits=NULL, lbls=NULL, limit=200, k=5, contours=NULL, es
     print("Creating estimators")
     estimators = lapply(contours, create.estimator)
     print("done")
+    rm("gcntr")
     docr.last.estimators <<- estimators
   }
   pr = split.and.prototype(estimators, lbls, k=k)
   docr.last.prototypes <<- pr
   cl = docr.prepare.classifier(pr)
   docr.last.classifier <<- cl
-  cl
+  invisible(cl)
 }
 
 docr.prepare.classifier <- function(prototypes) {
@@ -78,7 +137,7 @@ docr.prepare.classifier <- function(prototypes) {
     }
   }
   dist = create.shapes.distmat(pse)
-  list(as.matrix(dist), pse, 1:(length(pse)), labels)
+  list(as.dist(dist), pse, 1:(length(pse)), labels)
 }
 
 docr.predict <- function(classifier, img, k=10) {
@@ -89,12 +148,11 @@ docr.predict <- function(classifier, img, k=10) {
   tc = classifier[[2]]
   tr = classifier[[3]]
   tl = classifier[[4]]
-  edm = rbind(cbind(dm, 0), 0)
+  edm = rbind(cbind(as.matrix(dm), 0), 0)
   mh = dim(edm)[1]
   mw = dim(edm)[2]
-  print("1")
   for (i in 1:(mw-1)) {
-    edm[mh,i] <- estimator.distance(tc[[i]], se)
+    edm[i,mh] <- edm[mh,i] <- estimator.distance(tc[[i]], se)
   }
   knn.probability(tr, dim(edm)[1], unlist(tl), edm, k=k)
 }
@@ -116,55 +174,80 @@ split.and.prototype <- function(estimators, lbls, k=5) {
 create.estimator <- function(c) {
   res = list()
   l = (dim(c)[1])
-  gcntr <<- gcntr + 1
-  print(gcntr)
+  if (exists("gcntr")) {
+    print(gcntr)
+    gcntr <<- gcntr + 1
+  }
+  d = dist(c)
+  a = mean(d)
   for (i in 1:l) {
-    res[[i]] = list(c[i,], create.shape.context(i, c))
+    res[[i]] = list(c[i,], create.shape.context(i, c, a))
   }
   res
 }
 
-create.shape.context <- function(i, c) {
+create.shape.context <- function(i, c, alpha) {
   x = c[i,]
   rel = t(t(c) - x)
   conv = function(r) {
     a = atan2(r[2], r[1])
-    d = sqrt(sum((r^2)))
+    d = sqrt(sum((r^2))) / alpha
     c(a,log(d+1))
   }
   res = t(apply(rel, 1, conv))
   ## account only for objects at distance at 21pixels (15x15 box)
-  h = myhist2d(res, nbins=c(12,5), x.range=c(-pi,pi), y.range=c(0,3.1), show=FALSE)
+  h = myhist2d(res, nbins=c(12,5), x.range=c(-pi,pi), y.range=c(0,log(22 / alpha)), show=FALSE)
   h / sum(h)
 }
 
 create.shapes.distmat <- function(shest) {
-  dd = matrix(0, ncol=length(shest), nrow=length(shest))
   l = length(shest)
+  mm = l * (l+1) / 2
+  dd = matrix(0, ncol=l, nrow=l)
+  l = length(shest)
+  c = 0
   for (i in 1:l) {
     for (j in i:l) {
       ## print(c(i,j))
-      dd[j,i] <- estimator.distance(shest[[i]], shest[[j]])
+      c = c + 1
+      ## print(c(c,mm))
+      dd[i,j] <- dd[j,i] <- estimator.distance(shest[[i]], shest[[j]])
     }
   }
   dd
 }
 
 estimator.distance <- function(ae, be) {
-  dd = matrix(0, ncol=length(ae), nrow=length(be))
-  for (i in 1:length(ae)) {
-    for (j in i:length(be)) {
-      dd[j,i] <- shape.context.distance(ae[[i]], be[[j]])
+  l = length(ae)
+  dd = matrix(0, ncol=l, nrow=l)
+  for (i in 1:l) {
+    for (j in i:l) {
+      dd[i,j] <- dd[j,i] <- shape.context.distance(ae[[i]], be[[j]])
     }
   }
+  docr.last.medm <<- dd
   ass = solve_LSAP(dd)
+  if (all(unlist(ass) == 1:l)) {
+    return(0)
+  }
   ae.coords = matrix(unlist(sapply(ae, "[", 1)), ncol=2, byrow=TRUE)
   be.coords = matrix(unlist(sapply(be, "[", 1)), ncol=2, byrow=TRUE)
   be.assed = be.coords[ass,]
-  ## docr.ed.a <<- ae.coords
-  ## docr.ed.b <<- be.coords
-  ## docr.ed.ba <<- be.assed
-  mean(sqrt(rowSums((ae.coords - be.assed) ^ 2)))
+
+  p = ae.coords
+  q = be.assed
+  pp = cbind(1, p)
+  qq = cbind(1, q)
+  qqp = pseudoinverse(qq)
+  aa = t(qqp %*% pp)
+  o = colMeans(p - q)
+
+  ## print(aa)
+  ## print(p)
+  be.trans = t(aa %*% t(cbind(1, p)) + o)[,2:3]
+  ## print(cbind(p, be.trans))
+  mean(sqrt(rowSums((ae.coords - be.trans) ^ 2)))
+  ## ifelse(r < (.Machine$double.eps * 10 * l), 0, r)
 }
 
 shape.context.distance <- function(a, b) {
