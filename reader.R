@@ -217,7 +217,7 @@ create.shapes.distmat <- function(shest) {
   dd
 }
 
-estimator.distance <- function(ae, be) {
+match.contour.points <- function(ae, be, only.ind=TRUE) {
   l = length(ae)
   dd = matrix(0, ncol=l, nrow=l)
   for (i in 1:l) {
@@ -227,13 +227,25 @@ estimator.distance <- function(ae, be) {
   }
   docr.last.medm <<- dd
   ass = solve_LSAP(dd)
-  if (all(unlist(ass) == 1:l)) {
-    return(0)
+  if (only.ind) {
+    return(ass)
   }
   ae.coords = matrix(unlist(sapply(ae, "[", 1)), ncol=2, byrow=TRUE)
+  if (all(unlist(ass) == 1:l)) {
+    return(list(ae.coords, ae.coords))
+  }
   be.coords = matrix(unlist(sapply(be, "[", 1)), ncol=2, byrow=TRUE)
   be.assed = be.coords[ass,]
+  return(list(ae.coords, be.assed))
+}
 
+estimator.distance <- function(ae, be) {
+  match = match.contour.points(ae, be)
+  ae.coords = match[[1]]
+  be.assed = match[[2]]
+  if (all(ae.coords == be.assed)) {
+    return(0);
+  }
   p = ae.coords
   q = be.assed
   pp = cbind(1, p)
@@ -242,10 +254,7 @@ estimator.distance <- function(ae, be) {
   aa = t(qqp %*% pp)
   o = colMeans(p - q)
 
-  ## print(aa)
-  ## print(p)
   be.trans = t(aa %*% t(cbind(1, p)) + o)[,2:3]
-  ## print(cbind(p, be.trans))
   mean(sqrt(rowSums((ae.coords - be.trans) ^ 2)))
   ## ifelse(r < (.Machine$double.eps * 10 * l), 0, r)
 }
