@@ -179,6 +179,7 @@ create.estimator <- function(c) {
     gcntr <<- gcntr + 1
   }
   d = dist(c)
+  docr.last.est.dist <<- d
   a = mean(d)
   for (i in 1:l) {
     res[[i]] = list(c[i,], create.shape.context(i, c, a))
@@ -192,11 +193,16 @@ create.shape.context <- function(i, c, alpha) {
   conv = function(r) {
     a = atan2(r[2], r[1])
     d = sqrt(sum((r^2))) / alpha
-    c(a,log(d+1))
+    c(a,log10(d))
   }
   res = t(apply(rel, 1, conv))
+  docr.last.shc.d <<- res
   ## account only for objects at distance at 21pixels (15x15 box)
-  h = myhist2d(res, nbins=c(12,5), x.range=c(-pi,pi), y.range=c(0,log(22 / alpha)), show=FALSE)
+  h = myhist2d(res,
+    nbins=c(12,5),
+    x.range=c(-pi,pi),
+    y.range=c(log10(0.125), log10(2)),
+    show=FALSE)
   h / sum(h)
 }
 
