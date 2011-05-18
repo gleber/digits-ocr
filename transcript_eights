@@ -1,0 +1,148 @@
+.help.ESS <- help
+options(STERM='iESS', editor='emacsclient')
+source('reader.R')
+install.packages('corpcor')
+source('reader.R')
+digits = docr.read.images(limit=200)
+digits = docr.read.images(filename="t10k-images-idx3-ubyte", limit=200)
+lbls = docr.read.labels(filename="t10k-labels-idx1-ubyte", limit=200)
+ones = digits[which(lbls == 1)]
+ones = digits[which(lbls == 1)]
+length(ones)
+ones[[1]]
+options('width'=170)
+ones[[1]]
+ones[[2]]
+plot(ones[[1]])
+plot(contourify(ones[[1]]))
+plot(contourify(ones[[1]]), xlim=28)
+plot(contourify(ones[[1]]), xlim=c(0,28))
+plot(contourify(ones[[1]]), xlim=c(0,28), ylim=c(0,28))
+pl
+pl <- function(x, ...) { plot(x, xlim=c(0,28), ylim=c(0,28), ...) }
+oc = lapply(ones, contourify)
+oc[[1]]
+oc[[2]]
+pl <- function(x, ...) { plot(x, xlim=c(0,28), ylim=c(0,28), ...) }
+pl(oc[[1]])
+pl(oc[[2]])
+pl(oc[[9]])
+pl(oc[[1]])
+points(oc[[2]])
+pl(oc[[1]], col="red")
+points(oc[[2]], col="blue")
+x = oc[[1]]
+x
+x[1,]
+x[,,]
+x[,1]
+x[,2]
+rbind((x[,1], x[,2]))
+rbind(x[,1], x[,2])
+t(rbind(x[,1], x[,2]))
+x
+x
+t(rbind(x[,2], x[,1]))
+plot(t(rbind(x[,2], x[,1])))
+pl(t(rbind(x[,2], x[,1])))
+oc[[1]]
+pl(oc[[1]])
+ones[[1]]
+pl(t(rbind(x[,2], x[,1])))
+pl(oc)
+pl(oc[[1]])
+lines(oc[[1]])
+pl(oc[[1]])
+lines(oc[[1]], col="blue")
+pl(oc[[1]])
+points(oc[[1]], col="blue")
+points(oc[[2]], col="red")
+source('reader.R')
+est = lapply(oc, create.estimator)
+length(est)
+match.contour.points(est[[1]], est[[1]])
+source('reader.R')
+match.contour.points(est[[1]], est[[1]])
+list(a, b) = match.contour.points(est[[1]], est[[1]])
+source('reader.R')
+match.contour.points(est[[1]], est[[1]])
+m = match.contour.points(est[[1]], est[[1]])
+unlist(m)
+matrix(unlist(m), ncol=4, nrow=40)
+m = match.contour.points(est[[1]], est[[2]])
+m
+m
+pl(m[[1]])
+pl(m[[1]])
+arrows(m[[1]], m[[2]])
+a = m[[1]]
+b = m[[2]]
+a[1,]
+a[,1]
+arrows(a[,1], a[,2], b[,1], b[,2])
+plot(m[[1]])
+arrows(a[,1], a[,2], b[,1], b[,2])
+plot(m[[1]])
+arrows(a[,1], a[,2], b[,1], b[,2])
+plot(m[[1]])
+plot(m[[1]])
+points(m[[2]], col="blue")
+plot(m[[1]])
+arrows(a[,1], a[,2], b[,1], b[,2])
+x0=a[,1]
+y0=a[,2]
+text(x0,y0)
+plot(m[[1]])
+arrows(a[,1], a[,2], b[,1], b[,2])
+text(x0,y0)
+arrows(a[,1], a[,2], b[,1], b[,2])
+plot(m[[1]])
+plot()
+plot.new()
+arrows(a[,1], a[,2], b[,1], b[,2])
+plot(m[[1]], col="white")
+arrows(a[,1], a[,2], b[,1], b[,2])
+text(x0,y0)
+m[[1]]
+m[[2]]
+arrows(a[,1], a[,2], b[,1], b[,2])
+m = match.contour.points(est[[1]], est[[2]], only.ind=TRUE)
+source('reader.R')
+m = match.contour.points(est[[1]], est[[2]], only.ind=TRUE)
+m
+m[22]
+m[22] <- c(1,2,3,4,5)
+m
+m[22]
+m[23]
+m = match.contour.points(est[[1]], est[[2]], only.ind=TRUE)
+m[22]
+a = est[[1]]
+b = est[[2]]
+b[[15]]
+a[[22]]
+m[22]
+a[[22]
+]
+a[[22]]
+b[[15]]
+docr.last.medm
+length(a)
+length(b)
+docr.last.medm
+options('digits'=5)
+docr.last.medm
+options('digits'=2)
+docr.last.medm
+as.dist(docr.last.medm)
+apply(docr.last.medm, 1, which.min)
+ass
+m
+m
+a
+plot(m[[1]], col="white")
+arrows(a[,1], a[,2], b[,1], b[,2])
+a
+b
+a
+b
