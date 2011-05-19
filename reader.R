@@ -172,9 +172,11 @@ split.and.prototype <- function(estimators, lbls, k=5) {
   spl = split(estimators,lbls)
   for (i in names(spl)) { print(c(i, length(spl[[i]]))) }
   prototypes = list()
+  docr.last.split.est <<- spl
   for (key in names(spl)) {
     curdig = spl[[key]]
     estimators.distmat = create.shapes.distmat(curdig)
+    ## print(estimators.distmat)
     meds = pam(as.dist(estimators.distmat), k)$medoids
     prototypes[[key]] = curdig[meds]
   }
@@ -287,18 +289,36 @@ estimator.distance <- function(ae, be) {
   if (all(ae.coords == be.assed)) {
     return(0);
   }
-  p = ae.coords
-  q = be.assed
-  ## print(cbind(p, q))
-  pp = cbind(1, p)
-  qq = cbind(1, q)
-  qqp = pseudoinverse(qq)
-  aa = t(qqp %*% pp)
-  o = colMeans(p - q)
 
-  be.trans = t(aa %*% t(cbind(1, p)) + o)[,2:3]
-  docr.last.be.trans <<- be.trans
-  mean(sqrt(rowSums((ae.coords - be.trans) ^ 2)))
+  assed.dists = sqrt(rowSums((ae.coords - be.assed) ^ 2))
+  docr.last.assed.dists <<- assed.dists
+
+  m = mean(assed.dists)
+  s = sd(assed.dists)
+  outs = which((assed.dists - m) > 2 * s)
+  if (length(outs) != 0) {
+    assed.dists = assed.dists[-outs]
+  }
+
+  ## p = ae.coords[-outs,]
+  ## q = be.assed[-outs,]
+  ## ## print(cbind(p, q))
+  ## pp = cbind(1, p)
+  ## qq = cbind(1, q)
+  ## qqp = pseudoinverse(qq)
+  ## aa = t(qqp %*% pp)
+  ## o = colMeans(p - q)
+
+  ## ## be.trans = t(aa %*% t(cbind(1, p)) + o)[,2:3]
+
+  ## print(aa)
+  ## print(pp)
+
+  ## be.trans = t((aa %*% pp) + o)[,2:3]
+  ## docr.last.be.trans <<- be.trans
+  ## mean(sqrt(rowSums((p - be.trans) ^ 2)))
+
+  mean(assed.dists)
   ## ifelse(r < (.Machine$double.eps * 10 * l), 0, r)
 }
 
