@@ -91,7 +91,7 @@ docr.test <- function(cl, limit=200) {
   list(good, bad, good.d, bad.d)
 }
 
-docr.learn <- function(digits=NULL, lbls=NULL, limit=200, k=3, contours=NULL, estimators=NULL, cache=TRUE) {
+docr.learn <- function(digits=NULL, lbls=NULL, limit=200, k=5, contours=NULL, estimators=NULL, cache=TRUE) {
   if (cache) {
     print("Using cache")
     if (is.null(digits) && exists("docr.last.digits") && length(docr.last.digits) == limit) {
