@@ -193,7 +193,7 @@ create.estimator <- function(c) {
   docr.last.est.dist <<- d
   a = mean(d)
   center = colMeans(c)
-  print(center)
+  ## print(center)
   for (i in 1:l) {
     res[[i]] = list(c[i,], create.shape.context(i, c, a, center=center))
   }
@@ -221,7 +221,8 @@ create.shape.context <- function(i, c, alpha=NULL, center=NULL) {
   res = t(apply(rel, 1, conv))
   docr.last.shc.d <<- res
   h = myhist2d(res,
-    nbins=c(12,5),
+    nbins=c(6,4),
+    ## nbins=c(12,5),
     x.range=c(0,2*pi),
     y.range=c(log10(0.125), log10(2)),
     show=FALSE)
@@ -308,14 +309,17 @@ shape.context.distance <- function(a, b, a.center, b.center) {
   b.a = atan2(b.d[2], b.d[1])
 
   Ctan = 0.5 * (1 - cos(a.a - b.a))
-  
+
   a = a[[2]]
   b = b[[2]]
   d = (a-b)^2 / (a+b)
   d[is.nan(d)] <- 0
   Csc = 0.5 * sum(d)
 
-  0.9 * Csc + 0.1 * Ctan
+  ## Cdis = sqrt(sum((a[[1]] - b[[2]]) ^ 2))
+  ## Cdis ^ 4 # +
+
+  0.7 * Csc + 0.3 * Ctan
 }
 
 
