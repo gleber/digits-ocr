@@ -72,18 +72,23 @@ docr.test <- function(cl, limit=200) {
   digits = docr.read.images("t10k-images-idx3-ubyte", limit=limit)
   good = 0
   bad = 0
+  good.d = matrix(c(0), nrow=10)
+  bad.d = matrix(c(0), nrow=10)
   for (i in 1:limit) {
     cor.lbl = lbls[[i]]
     dig = digits[[i]]
     r = docr.predict(cl, dig)
     pr.lbl = which.max(unlist(r)) - 1
     if (cor.lbl == pr.lbl) {
+      good.d[cor.lbl + 1] = good.d[cor.lbl + 1] + 1
       good = good + 1
     } else {
+      bad.d[cor.lbl + 1] = bad.d[cor.lbl + 1] + 1
       bad = bad + 1
     }
     print(c(good, bad, good / (good + bad)))
   }
+  list(good, bad, good.d, bad.d)
 }
 
 docr.learn <- function(digits=NULL, lbls=NULL, limit=200, k=3, contours=NULL, estimators=NULL, cache=TRUE) {
