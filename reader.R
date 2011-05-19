@@ -302,6 +302,22 @@ estimator.distance <- function(ae, be) {
   ## ifelse(r < (.Machine$double.eps * 10 * l), 0, r)
 }
 
+plot.matching <- function(ae, be) {
+  pl = function(x, ...) { plot(x, xlim=c(0,28), ylim=c(0,28), ...) }
+
+  ed = estimator.distance(ae, be)
+
+  ae.coords = matrix(unlist(sapply(ae, "[", 1)), ncol=2, byrow=TRUE)
+  be.coords = matrix(unlist(sapply(be, "[", 1)), ncol=2, byrow=TRUE)
+  be.assed = be.coords[docr.last.ass,]
+
+  pl(ae.coords, col="blue")
+  points(be.coords, col="red")
+  arrows(ae.coords[,1], ae.coords[,2], be.assed[,1], be.assed[,2], angle=15, length=0.1, col="#bbbbbb")
+
+  ed
+}
+
 shape.context.distance <- function(a, b, a.center, b.center) {
   a.d = a.center - a[[1]]
   b.d = b.center - b[[1]]
