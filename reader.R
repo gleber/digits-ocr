@@ -44,10 +44,16 @@ distmat <- function(x, y, f) {
   dd
 }
 
-contourify <- function(img, k=40) {
+edgify <- function(img) {
   id = imagedata(img)
-  idc = imgCanny(id, 1.2)
-  c = which(idc==0, arr.ind=TRUE)
+  id2 = imgSplineScale(id, 3, 3)
+  idc = imgCanny(id2, 1.2)
+  matrix(idc, ncol=28 * 3, nrow=28 * 3)
+}
+
+contourify <- function(img, k=100) {
+  idc = edgify(img)
+  c = which(idc==0, arr.ind=TRUE) / 3
   ## plot(c)
   l = dim(c)[1]
   if (l > k) {
