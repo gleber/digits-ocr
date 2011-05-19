@@ -55,7 +55,7 @@ contourify <- function(img, k=40) {
     smallified = pam(dist(c), k=k)$medoids
   } else {
     smallified = 1:k
-    c = matrix(rep(c, length.out=2*k), ncol=2)
+    c = c[rep(seq(nrow(c)), length.out=k), ]
   }
   dim(smallified) = k
   c[smallified,]
