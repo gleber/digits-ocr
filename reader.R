@@ -223,7 +223,7 @@ create.shape.context <- function(i, c, alpha=NULL, center=NULL) {
   res = t(apply(rel, 1, conv))
   docr.last.shc.d <<- res
   h = myhist2d(res,
-    nbins=c(6,4),
+    nbins=c(12,5),
     ## nbins=c(12,5),
     x.range=c(0,2*pi),
     y.range=c(log10(0.125), log10(2)),
@@ -296,12 +296,27 @@ estimator.distance <- function(ae, be) {
   m = mean(assed.dists)
   s = sd(assed.dists)
   outs = which((assed.dists - m) > 2 * s)
+  print(outs)
   if (length(outs) != 0) {
     assed.dists = assed.dists[-outs]
   }
 
-  ## p = ae.coords[-outs,]
-  ## q = be.assed[-outs,]
+  p = ae.coords[-outs,]
+  q = be.assed[-outs,]
+
+  qx = q[,1]
+  qy = q[,2]
+  
+  fit.qx = Tps(p, qx, scale.type="unscaled", lambda=1000000000)
+  fit.qy = Tps(p, qy, scale.type="unscaled", lambda=1000000000)
+
+  be.coords.nx = predict(fit.qx, be.coords[,])
+  be.coords.ny = predict(fit.qy, be.coords[,])
+
+  be.coords.new = cbind(be.coords.nx, be.coords.ny)
+  docr.last.be.trans <<- be.coords.new
+  print(be.coords.new)
+  
   ## ## print(cbind(p, q))
   ## pp = cbind(1, p)
   ## qq = cbind(1, q)
@@ -322,6 +337,9 @@ estimator.distance <- function(ae, be) {
   ## ifelse(r < (.Machine$double.eps * 10 * l), 0, r)
 }
 
+iterative.matching <- function(a, b) {
+}
+
 plot.matching <- function(ae, be) {
   pl = function(x, ...) { plot(x, xlim=c(0,28), ylim=c(0,28), ...) }
 
@@ -333,7 +351,8 @@ plot.matching <- function(ae, be) {
 
   pl(ae.coords, col="blue")
   points(be.coords, col="red")
-  arrows(ae.coords[,1], ae.coords[,2], be.assed[,1], be.assed[,2], angle=15, length=0.1, col="#bbbbbb")
+  ## arrows(ae.coords[,1], ae.coords[,2], be.assed[,1], be.assed[,2], angle=15, length=0.1, col="#bbbbbb")
+  points(docr.last.be.trans, col="green")
 
   ed
 }

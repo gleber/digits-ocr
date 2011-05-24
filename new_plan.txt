@@ -1,0 +1,25 @@
+;; This buffer is for notes you don't want to save, and for Lisp evaluation.
+;; If you want to create a file, visit that file with C-x C-f,
+;; then enter the text in that file's own buffer.
+
+biblioteka FANN
+w matlabie jest jakas dobra
+dowolny jezyk szybki
+
+
+1. siec neuronowa (28 * 28 -> ? -> 10) wyjscia [0, 1]
+- sigmoidalna, jedna ukryta
+- propagacja wsteczna
+2. zbior uczacy, podobne cyfry
+- najpierw uczymy proste ksztalty
+- uczyc 0, 1
+- podobne cyfry inaczej karane
+- RMSE - obserwowac
+3. sprawdzic jak sobie radzi
+- confusion matrix
+- wyniki podobienstwa do ewentualnej poprawy uczenia
+-- modyfikacja wzorcow uczacych dodajac zaburzenia (funkcja podobienstwa cyfr, recznie )
+4. wyniki
+- zawieszanie decyzji
+
+
