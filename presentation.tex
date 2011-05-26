@@ -1,0 +1,383 @@
+\documentclass{beamer}
+\usepackage{graphics}
+\usepackage[utf8]{inputenc}
+\usepackage{polski}
+\usepackage{tikz}
+\usepackage{graphicx}
+
+\usetheme{Bergen}
+
+\begin{document}
+\title{Optical Character Recognition}   
+\author{Gleb Peregud} 
+
+\frame{\titlepage} 
+
+\frame
+{
+  \frametitle{What is OCR?}
+  It is the mechanical or electronic translation of scanned images of
+  handwritten, typewritten or printed text into machine-encoded text.
+}
+
+\frame{
+  \frametitle{History}
+  \begin{itemize}
+  \item 1929 Gustav Tauschek, Germany, first patent. Templates and photodetector
+  \item 1950 David H. Shepard, USA, Army Forces Security
+    Agency. Intelligent Machines Research Corporation
+  \item 1955 Readers Digest. First commercial system
+  \item 1965 US Postal Service. Sort mail
+  \item 1965 UK General Post Office. Sort mail
+  \item 1974 Ray Kurzwell. Omni-font optical OCR. For blind
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Parts of the problem}
+  \begin{itemize}
+  \item Character recognition
+  \item Word recognition
+  \item Grammar analysis
+  \item Image detection
+  \item Page layout recognition
+  \item Recreation of original page
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Character recognition}
+  \begin{block}{What?}
+  Classifying image samples into defined set of classes,
+  corresponding to characters available in a given script.
+  \end{block}
+}
+
+\frame{
+  \frametitle{Problems}
+  \begin{itemize}
+  \item Scripts
+  \item Fonts
+  \item Distortions
+    \begin{itemize}
+    \item skew
+    \item noise
+    \item occlusions
+    \item rotation
+    \end{itemize}
+  \item Handwriting style
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Preparations}
+  \begin{itemize}
+  \item Scanning
+  \item Binarization or greyscaling
+  \item Character separation
+  \item Deskewing
+  \item Noise removal
+  \item Occlusion removal
+  \item Blurring
+  \item Centering
+  \item Normalization
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Approaches}
+  \begin{itemize}
+  \item ANN
+    \begin{itemize}
+    \item linear classifier
+    \item multilayer NN
+    \item convolution nets
+    \end{itemize}
+  \item SVM    
+  \item Decision trees
+    \begin{itemize}
+    \item decision stumps
+    \item Haar features
+    \end{itemize}
+  \item Other
+    \begin{itemize}
+    \item Feature extraction
+    \item Contour matching
+    \item Histograms
+    \end{itemize}
+  \end{itemize}
+}
+% \frame{
+%   \frametitle{Pożądane właściwości}
+%   \begin{itemize}
+%   \item działa w chmurze
+%   \item minimalne wymagania konfiguracyjne
+%   \item łatwe w użyciu
+%   \item nieinwazyjne
+%   \item rozszerzalne
+%   \item działa :)
+%   \end{itemize}
+% }
+
+% \frame{
+%   \frametitle{Stosowane technologie}
+%   \parbox{.4\textwidth}
+%   % {\hspace{2em}\includegraphics[width=.3\textwidth]{erlang_logo.png}}
+%   \parbox{.5\textwidth}
+%   {
+%   \begin{itemize}  
+%     \item Erlang
+%     \pause
+%     \item eXAT
+%     \pause
+%     \item ERESYE
+%     \pause
+%     \item Folsom
+%     \pause
+%     \item inet-mdns
+%   \end{itemize}
+%   }
+% }
+
+% \frame{
+%    \frametitle{Rodzaje agentów}
+%    Agent monitorujący
+%    \begin{itemize}
+%    \item działa na każdym węźle chmury
+%    \item odpowiedzialny za całą logikę systemu
+%      \begin{itemize}
+%        \item zbieranie informacji o otoczeniu
+%        \item użycie regułek do wnioskowania w celu uzupełniania
+%          posiadanych informacji
+%      \end{itemize}
+%    \end{itemize}
+%    \pause
+%    Agent administratora
+%    \begin{itemize}
+%    \item uruchamiany przez administratora
+%    \item pobiera dane do raportu od agentów monitorujących
+%    \item prezentuje raport w~czytelnej formie
+%      \begin{itemize}
+%      \item wnioskowanie na podstawie zebranej wiedzy
+%      \end{itemize}
+%    \end{itemize}
+%    }
+
+% \frame{
+%    \frametitle{Dane posiadane przez agenta}
+%    \begin{itemize}
+%    \item nazwa własna
+%    \item uługi świadczone przez dany węzeł
+%    \item procesy powiązane z~usługami
+%      \begin{itemize}
+%      \item sposoby wykrycia czy proces jest uruchomiony (np. regex)
+%      \end{itemize}
+%    \item lista wszystkich znanych węzłów chmury
+%    \item lista sąsiadów (obserwowanych węzłów)
+%    \item liczba agentów obserwujących węzeł
+%    \end{itemize}
+% }
+
+% % \frame{
+% %    \frametitle{Dane posiadane przez agenta}
+% %    \begin{center}
+% %    \begin{tikzpicture}[every node/.style={circle,draw}] 
+% %    \node[xshift=-5em,yshift=2em] (a) {1};
+% %    \node (b) {1};
+% %    \node[xshift=5em,yshift=1em] (c) {2};
+% %    \node[xshift=2em,yshift=-6em] (d) {2};
+% %    \node[xshift=-2em,yshift=-5em] (e) {2};
+% %    \node[xshift=8em,yshift=-3em] (f) {2};
+% %    \draw[-latex] (a) -- (b);
+% %    \draw[-latex] (b) -- (c);
+% %    \draw[-latex] (c) -- (d);
+% %    \draw[-latex] (d) -- (e);
+% %    \draw[-latex] (e) -- (f);
+% %    \draw[-latex] (a) -- (e);
+% %    \draw[-latex] (a) -- (c);
+% %    \draw[-latex] (c) -- (f);
+% %    \draw[-latex] (b) -- (d);
+% %    \draw[-latex] (e) .. controls +(-2em,1em) and +(-1em,-2em) .. (a);
+% %    \end{tikzpicture}\\[.5em]
+% %    Obserwujący i~obserwatorzy
+% %    \end{center}
+% %    }
+
+% \frame{
+%    \frametitle{Dane posiadane przez agenta}
+%    \begin{overlayarea}{\textwidth}{.5\textheight}
+%    \only<1>{
+%       Dla małych klastrów:\\[1em]
+%       \hspace{1.5em}lista sąsiadów $=$ lista wszystkich węzłów
+%    }
+%    \only<2->{
+%       Dla dużych klastrów:\\[1em]
+%       \hspace{1.5em}Listy sąsiadów generowane dynamicznie.\\[1em]
+%       \only<3>{\hspace{3em}\parbox{0.8\textwidth}{Stosowany popularny algorytm
+%       równoważenia obciążeń (np. dyfuzja naturalna).}}
+%    }
+%    \end{overlayarea}
+% }
+
+% \frame{
+%    \frametitle{Zbieranie danych}
+%    \begin{enumerate}
+%    \item agent otrzymuje żądanie przesłania danych
+%    \pause
+%    \item sprawdza, czy pobrał dane od sąsiadów w~ostatnim czasie
+%    \pause
+%    \item wysyła żądania do sąsiadów, których dane są nieaktualne
+%    \pause
+%    \item jeśli dostanie wielokrotnie dane tego samego węzła, wybiera aktualniejsze
+%    \pause
+%    \item dodaje do listy własne dane
+%    \pause
+%    \item wysyła odpowiedź
+%    \end{enumerate}
+%    \pause
+%    Węzły, które zostały już odpytane na wyższym poziomie, są pomijane
+%    (unikanie cykli).
+% }
+
+% \frame{
+%    \frametitle{Sposób komunikacji}
+%    Mechanizm komunikacji eXATa:
+%    \pause
+%    \begin{itemize}
+%    \item zgodny z~FIPA ACL
+%    \pause
+%    \item oparty na protokole HTTP MTP
+%    \pause
+%    \item<alert@5>wymaga nazwy agenta i~adresu sieciowego
+%    \end{itemize}
+%    }
+   
+% \frame{
+%    \frametitle{Sposób komunikacji}
+%    Agenci wykrywają się automatycznie\\[1em]
+%    \pause
+%    \hspace{1.5em}W~sieci LAN: mDNS (Zeroconf)\\[.5em]
+%    \pause
+%    \hspace{1.5em}W~Amazon EC2 (i~innych): import listy węzłów z API EC2
+%    }
+
+% \frame{
+%    \frametitle{Rodzaje komunikatów}
+%    \only<1>{
+%       \textbf{agent-ping}\\[1em]
+%       \hspace*{.05\textwidth}\parbox{0.95\textwidth}{
+%       Typ ACL: \emph{request}\\[.5em]
+%       Dodatkowe dane: brak\\[.5em]
+%       Komunikat kontrolny warstwy agentów}
+%       }
+%    \only<2>{
+%       \textbf{agent-pong}\\[1em]
+%       \hspace*{.05\textwidth}\parbox{0.95\textwidth}{
+%       Typ ACL: \emph{inform}\\[.5em]
+%       Dodatkowe dane: brak\\[.5em]
+%       Komunikat kontrolny warstwy agentów}
+%       }
+%    \only<3>{
+%       \textbf{ping-other}\\[1em]
+%       \hspace*{.05\textwidth}\parbox{0.95\textwidth}{
+%       Typ ACL: \emph{request}\\[.5em]
+%       Dodatkowe dane: adres docelowego węzła\\[.5em]
+%       Komunikat kontrolny przekierowywany przez trzeciego agenta}
+%       }
+%    \only<4>{
+%       \textbf{pong-other}\\[1em]
+%       \hspace*{.05\textwidth}\parbox{0.95\textwidth}{
+%       Typ ACL: \emph{inform if}\\[.5em]
+%       Dodatkowe dane: adres odpowiadającego węzła\\[.5em]
+%       Komunikat kontrolny przekierowywany przez trzeciego agenta}
+%       }
+%    \only<5>{
+%       \textbf{request-metrics}\\[1em]
+%       \hspace*{.05\textwidth}\parbox{0.95\textwidth}{
+%       Typ ACL: \emph{request}\\[.5em]
+%       Dodatkowe dane: lista węzłów już odpytywanych\\[.5em]
+%       Żądanie przesłania danych wydajnościowych}
+%       }
+%    \only<6>{
+%       \textbf{metrics-list}\\[1em]
+%       \hspace*{.05\textwidth}\parbox{0.95\textwidth}{
+%       Typ ACL: \emph{inform}\\[.5em]
+%       Dodatkowe dane: pary agentów i~danych wydajnościowych\\[.5em]
+%       Przesłane dane wydajnościowe}
+%       }
+%    \only<7>{
+%       \textbf{request-services}\\[1em]
+%       \hspace*{.05\textwidth}\parbox{0.95\textwidth}{
+%       Typ ACL: \emph{request}\\[.5em]
+%       Dodatkowe dane: lista węzłów już odpytywanych\\[.5em]
+%       Żądanie przesłania danych wydajnościowych}
+%       }
+%    \only<8>{
+%       \textbf{services-list}\\[1em]
+%       \hspace*{.05\textwidth}\parbox{0.95\textwidth}{
+%       Typ ACL: \emph{inform}\\[.5em]
+%       Dodatkowe dane: pary agentów i~świadczonych przez nie usług\\[.5em]
+%       Przesłane dane o~usługach}
+%       }
+% }
+
+% \frame{
+%    \frametitle{Wykrywane scenariusze}
+%    \only<1>{
+%       Nie działający agent
+%       \begin{itemize}
+%       \item brak odpowiedzi na \textbf{agent-ping}
+%       \item normalna odpowiedź na ping w~warstwie sieciowej
+%       \end{itemize}
+%       }
+%    \only<2>{
+%       Nie działający węzeł
+%       \begin{itemize}
+%       \item brak odpowiedzi na \textbf{agent-ping}
+%       \item brak odpowiedzi na ping w~warstwie sieciowej
+%       \item brak odpowiedzi na pingi przekierowywane przez sąsiadów
+%       (\textbf{ping-other})
+%       \end{itemize}
+%       }
+%    \only<3>{
+%       Przerwane łącze
+%       \begin{itemize}
+%       \item brak odpowiedzi na \textbf{agent-ping}
+%       \item brak odpowiedzi na ping w~warstwie sieciowej
+%       \item normalna odpowiedź na pingi przekierowywane przez sąsiadów
+%       (\textbf{ping-other})
+%       \end{itemize}
+%       }
+%    \only<4>{
+%       Zagrożona usługa
+%       \begin{itemize}
+%       \item świadczące ją węzły nie działają\\[.5ex]
+%       \hspace{1em}lub\\
+%       \item świadczące ją węzły są przeciążone\\[.5ex]
+%       \hspace{1em}lub\\
+%       \item procesy związane z~usługą zabite
+%       \end{itemize}
+%       }
+%    }
+
+% \frame{
+%    \frametitle{Potencjalne problemy projektu}
+%    \begin{itemize}
+%    \item trudności z~wykorzystywanymi bibliotekami
+%    \pause
+%    \item problemy z~konfiguracją środowiska testowego
+%    \pause
+%    \item za duże użycie zasobów sieciowych
+%    \pause
+%    \item wdrożenie systemu (patrz p.1)
+%    \pause
+%    \item mała ilość czasu
+%    \end{itemize}
+%    }
+
+% % \frame{
+% %   \includegraphics[width=\textwidth]{clouds.jpg}  
+% %    }
+
+\end{document}
+
