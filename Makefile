@@ -1,3 +1,4 @@
 all:
 	gcc -lfann -Wall docr.c -o docr
-	chmod +x docr
+	gcc -lfann -Wall docr_test.c -o docr_test
+	chmod +x docr docr_test

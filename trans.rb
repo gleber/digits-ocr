@@ -30,10 +30,13 @@ def loadIDX(filename)
   end
 end
 
-digits = loadIDX("train-images-idx3-ubyte")
-labels = loadIDX("train-labels-idx1-ubyte")
+#digits = loadIDX("train-images-idx3-ubyte")
+#labels = loadIDX("train-labels-idx1-ubyte")
+digits = loadIDX("t10k-images-idx3-ubyte")
+labels = loadIDX("t10k-labels-idx1-ubyte")
 
-File.open("train_fann.txt", "wb") do |file|
+# "train_fann.txt"
+File.open("test_data", "wb") do |file|
   file.puts("%d %d %d" % [digits.size, 28*28, 10])
   digits.size.times do |i|
     ds = digits[i].bytes.map{|x| x}
