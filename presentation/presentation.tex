@@ -8,10 +8,10 @@
 \usetheme{Bergen}
 
 \begin{document}
-\title{Optical Character Recognition}   
-\author{Gleb Peregud} 
+\title{Optical Character Recognition}
+\author{Gleb Peregud}
 
-\frame{\titlepage} 
+\frame{\titlepage}
 
 \frame
 {
@@ -93,20 +93,228 @@
     \item multilayer NN
     \item convolution nets
     \end{itemize}
-  \item SVM    
+  \item SVM
   \item Decision trees
     \begin{itemize}
-    \item decision stumps
+    \item stumps
     \item Haar features
     \end{itemize}
   \item Other
     \begin{itemize}
+    \item Contour-based (contour matching, direction codes)
     \item Feature extraction
     \item Contour matching
     \item Histograms
     \end{itemize}
   \end{itemize}
 }
+
+\frame{
+  \frametitle{Invariants}
+  \begin{itemize}
+    \item augment training set with modified samples transformed with
+      invariants
+    \item build in invariances by extracting invariant features
+    \item add regularization term to error function
+    \item change structure of classifier to ensure invariance
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{MNIST database}
+  \begin{block}{Name}
+    THE MNIST DATABASE of handwritten digits
+  \end{block}
+  \begin{block}{Who}
+    Yann LeCun, Courant Institute, NYU \\
+    Corinna Cortes, Google Labs, New York
+  \end{block}
+  \begin{itemize}
+    \item 28x28 images
+    \item centered by center of mass
+    \item gray-scale
+    \item 60000 training set
+    \item 10000 test set
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Neural networks 0}
+  \begin{block}{Who?}
+    Gleb Peregud, 2011
+  \end{block}
+  \begin{block}{What?}
+    \begin{itemize}
+    \item 2-layer NN
+    \item 784-10
+    \item quickprop
+    \end{itemize}
+  \end{block}
+  \begin{block}{Result}
+    15\%
+  \end{block}
+}
+
+\frame{
+  \frametitle{Neural networks 1}
+  \begin{block}{Who?}
+    LeCun et al. 1998
+  \end{block}
+  \begin{block}{What?}
+    \begin{itemize}
+    \item 3-layer NN
+    \item 784-1000-10
+    \item no preparations
+    \end{itemize}
+  \end{block}
+  \begin{block}{Result}
+    4.5\%
+  \end{block}
+}
+
+\frame{
+  \frametitle{Neural networks 2}
+  \begin{block}{Who?}
+    Ciresan et al., arXiv 1003.0358, 2010
+  \end{block}
+  \begin{block}{What?}
+    \begin{itemize}
+    \item 7-layer NN
+    \item 784-2500-2000-1500-1000-500-10
+    \item trained on GPU
+    \item additional training with elastic distortions
+    \end{itemize}
+  \end{block}
+  \begin{block}{Result}
+    0.35\%
+  \end{block}
+}
+
+\frame{
+  \frametitle{Convolution networks}
+  \begin{itemize}
+  \item special neural network where only pixel values around a
+    central pixels go into the network’s hidden units (sparse
+    network) and they share their weights
+  \item network performs a nonlinear filtering operation
+  \item do subsampling - the outputs of the hidden units go into a
+    smaller set of hidden units
+  \item optional - repeat until a normal output layer
+  \item contain less parameters than full networks, and are therefore easier to train
+  \item their structure is modeled on the human visual system
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Convolution networks - example}
+  \begin{block}{Who?}
+    LeCun et al. 1998
+  \end{block}
+  \begin{block}{What?}
+    \begin{itemize}
+    \item convolutional network LeNet-5
+    \item trained with distortions
+    \item works with little-to-no image preprocessing
+    \item works directly on RGB images
+    \item can recognize patterns with extreme variability
+    \end{itemize}
+  \end{block}
+}
+
+\frame{
+  \includegraphics[width=23em]{noise6.png}
+}
+
+\frame{
+  \frametitle{K-NN, contour matching using shape contexts}
+  \begin{block}{Who?}
+    Belongie et al. IEEE PAMI 2002
+  \end{block}
+  \begin{block}{What?}
+    \begin{itemize}
+    \item contour detection
+    \item shape context calculation
+    \item contour point matching
+    \item iterative transformations (TPS, affine)
+    \item selecting of prototypes
+    \item K-NN for classification
+    \end{itemize}
+  \end{block}
+  \begin{block}{Result}
+    0.63\%
+  \end{block}
+}
+
+\frame{
+  \includegraphics[width=25em]{two-digits.png}
+}
+
+\frame{
+  \frametitle{Shape context}
+  \begin{block}{What?}
+    Histogram in log-polar space
+  \end{block}
+  \begin{itemize}
+  \item counts number of points in each bin relative to a selected
+    point
+  \item compact and rich local descriptor
+  \item similar points on a contour have similar shape contexts
+  \item similarity in terms of $\chi^{2}$
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Shape context}
+  \includegraphics[width=23em]{shape-contexts.png}
+}
+
+\frame{
+  \frametitle{Shape context matching cost}
+  \[ C_{ij} = (1 - \beta)C_{ij}^{sc} + \beta{}C_{ij}^{tan} \]
+  \\
+  \[ C_{ij}^{tan} = 0.5(1 - cos(\theta_{i} - \theta_{j})) \]
+
+}
+
+\frame{
+  \frametitle{Matching points on contours}
+  \begin{itemize}
+  \item Hungarian algorithm
+  \item minimizes \[ H(\pi) = \sum_{i} C(p_i,q_{\pi(i)}) \]
+  \item $O(n^3)$
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Shape context, transformations}
+  \includegraphics[width=23em]{process.png}
+}
+
+\frame{
+  \frametitle{Shapes similarity distance}
+  \begin{itemize}
+  \item \[ D = 1.6D_{ac} + D_{sc} + 0.3D_{be} \]
+  \item $D_{ac}$ is defined as the sum of squared brightness
+    differences in Gaussian windows around corresponding image points
+  \item $D_{sc}$ is defined as as the symmetric sum of shape context matching
+    costs over best matching points
+  \item $D_{be}$ is a bending energy of TPS transformation
+  \end{itemize}
+}
+
+\frame{
+  \frametitle{Classifier}
+  \begin{itemize}
+  \item select k prototypes for each digit
+  \item use PAM / k-medoids algorithm
+  \item run k-nearest neighbours algorithm for input on prototypes
+  \end{itemize}
+}
+
+\frame{
+  Thank you!
+}
+
 % \frame{
 %   \frametitle{Pożądane właściwości}
 %   \begin{itemize}
@@ -125,7 +333,7 @@
 %   % {\hspace{2em}\includegraphics[width=.3\textwidth]{erlang_logo.png}}
 %   \parbox{.5\textwidth}
 %   {
-%   \begin{itemize}  
+%   \begin{itemize}
 %     \item Erlang
 %     \pause
 %     \item eXAT
@@ -181,7 +389,7 @@
 % % \frame{
 % %    \frametitle{Dane posiadane przez agenta}
 % %    \begin{center}
-% %    \begin{tikzpicture}[every node/.style={circle,draw}] 
+% %    \begin{tikzpicture}[every node/.style={circle,draw}]
 % %    \node[xshift=-5em,yshift=2em] (a) {1};
 % %    \node (b) {1};
 % %    \node[xshift=5em,yshift=1em] (c) {2};
@@ -251,7 +459,7 @@
 %    \item<alert@5>wymaga nazwy agenta i~adresu sieciowego
 %    \end{itemize}
 %    }
-   
+
 % \frame{
 %    \frametitle{Sposób komunikacji}
 %    Agenci wykrywają się automatycznie\\[1em]
@@ -376,7 +584,7 @@
 %    }
 
 % % \frame{
-% %   \includegraphics[width=\textwidth]{clouds.jpg}  
+% %   \includegraphics[width=\textwidth]{clouds.jpg}
 % %    }
 
 \end{document}
