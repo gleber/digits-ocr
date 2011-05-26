@@ -28,7 +28,7 @@ void test(char * fn, struct fann_train_data *data) {
   /*            fann_abs(calc_out[0] - data->output[i][0])); */
   /*   } */
 
-  printf("Testing network.\n");
+  /* printf("Testing network.\n"); */
 
   int good = 0;
   int bad = 0;
@@ -61,7 +61,7 @@ void test(char * fn, struct fann_train_data *data) {
   }
   printf("Results: %d / %d, %f\n", good, (good+bad), (float)good / (good+bad));
 
-  printf("Cleaning up.\n");
+  /* printf("Cleaning up.\n"); */
   fann_destroy(ann);
 
   return;
@@ -83,7 +83,7 @@ int main()
   strings[8] = "digits_3l_80hu_1000tr.net";
   int i;
   for (i = 0; i < 9; i++) {
-    printf("NN: %s\n", strings[i]);
+    printf("NN: %s ", strings[i]);
     test(strings[i], data);
   }
   fann_destroy_train(data);
