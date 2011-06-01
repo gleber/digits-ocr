@@ -15,17 +15,17 @@ int main()
   fann_type *calc_out;
   const unsigned int num_input = 784; // 25*25
   const unsigned int num_output = 10;
-  const unsigned int num_layers = 3;
-  const unsigned int num_neurons_hidden = 150;
+  const unsigned int num_layers = 4;
+  const unsigned int num_neurons_hidden = 70;
   const float desired_error = (const float) 0.02;
-  const unsigned int max_epochs = 10000;
-  const unsigned int epochs_between_reports = 50;
+  const unsigned int max_epochs = 5000;
+  const unsigned int epochs_between_reports = 30;
   struct fann *ann;
   struct fann_train_data *data;
 
 
   printf("Creating network.\n");
-  ann = fann_create_standard(num_layers, num_input, num_neurons_hidden, num_output);
+  ann = fann_create_standard(num_layers, num_input, num_neurons_hidden, 50, num_output);
 
   data = fann_read_train_from_file("train_fann.txt");
 

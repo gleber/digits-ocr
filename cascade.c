@@ -8,8 +8,8 @@ int main()
   struct fann *ann;
   struct fann_train_data *train_data, *test_data;
   const float desired_error = (const float)0.01;
-  unsigned int max_neurons = 300;
-  unsigned int neurons_between_reports = 10;
+  unsigned int max_neurons = 50;
+  unsigned int neurons_between_reports = 5;
   float mse_train, mse_test;
   unsigned int i = 0;
   fann_type *output;

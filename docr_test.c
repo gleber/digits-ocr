@@ -33,6 +33,14 @@ void test(char * fn, struct fann_train_data *data) {
   int good = 0;
   int bad = 0;
 
+  int matrix[10][10];
+  /* memset(matrix[0], 0, sizeof(int)); */
+  for (i = 0; i < 10; i++) {
+    for (j = 0; j < 10; j++) {
+      matrix[i][j] = 0;
+    }
+  }
+
   for(i = 0; i < data->num_data; i++){
     fann_reset_MSE(ann);
     calc_out = fann_test(ann, data->input[i], data->output[i]);
@@ -51,6 +59,7 @@ void test(char * fn, struct fann_train_data *data) {
         rv = calc_out[j];
       }
     }
+    matrix[sb][res]++;
     if (res == sb) {
       good++;
     } else {
@@ -60,6 +69,21 @@ void test(char * fn, struct fann_train_data *data) {
     /*        i, res, sb, rv); */
   }
   printf("Results: %d / %d, %f\n", good, (good+bad), (float)good / (good+bad));
+
+  printf("Confusion matrix:\n");
+  printf("      ");
+  for (i = 0; i < 10; i++) {
+    printf("%5d ", i);
+  }
+  printf("\n");
+  for (i = 0; i < 10; i++) {
+    printf("%5d ", i);
+    for (j = 0; j < 10; j++) {
+      printf("%5d ", matrix[i][j]);
+    }
+    printf("\n");
+  }
+
 
   /* printf("Cleaning up.\n"); */
   fann_destroy(ann);
@@ -71,7 +95,7 @@ int main()
 {
   struct fann_train_data *data;
   data = fann_read_train_from_file("test.data");
-  char* strings[9];
+  char* strings[10];
   strings[0] = "digits_2l_10000ts.net";
   strings[1] = "digits_3l_150hu_10000ts_002e.net";
   strings[2] = "digits_3l_450h_2000ts.net";
@@ -81,8 +105,9 @@ int main()
   strings[6] = "digits_3l_1000hu_2000ts.net";
   strings[7] = "digits_3l_300hu_1000tr_500e.net";
   strings[8] = "digits_3l_80hu_1000tr.net";
+  strings[9] = "digits_cascade_50n.net";
   int i;
-  for (i = 0; i < 9; i++) {
+  for (i = 9; i < 10; i++) {
     printf("NN: %s ", strings[i]);
     test(strings[i], data);
   }
