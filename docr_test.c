@@ -107,7 +107,7 @@ int main()
   strings[8] = "digits_3l_80hu_1000tr.net";
   strings[9] = "digits_cascade_50n.net";
   int i;
-  for (i = 9; i < 10; i++) {
+  for (i = 0; i < 10; i++) {
     printf("NN: %s ", strings[i]);
     test(strings[i], data);
   }
