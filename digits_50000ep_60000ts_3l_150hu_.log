@@ -1,0 +1,80 @@
+Will write to: digits_50000ep_60000ts_3l_150hu_.net
+Creating network.     
+Training network.     
+Max epochs    50000. Desired error: 0.0199999996.
+Epochs            1. Current error: 0.3130759597. Bit fail 600000.
+Epochs           30. Current error: 0.0916996822. Bit fail 60000.
+Epochs           60. Current error: 0.0998077244. Bit fail 64856.
+Epochs           90. Current error: 0.1240986884. Bit fail 79748.
+Epochs          120. Current error: 0.1071896181. Bit fail 70295.
+Epochs          150. Current error: 0.1009583026. Bit fail 65548.
+Epochs          180. Current error: 0.1148134097. Bit fail 73977.
+                      
+                      
+                      
+Epochs          210. Current error: 0.1103264317. Bit fail 71260.
+Epochs          240. Current error: 0.1132630184. Bit fail 73065.
+Epochs          270. Current error: 0.1044894755. Bit fail 67800.
+Epochs          300. Current error: 0.0902156979. Bit fail 59365.
+Epochs          330. Current error: 0.0992505401. Bit fail 65600.
+Epochs          360. Current error: 0.1024923176. Bit fail 66693.
+Epochs          390. Current error: 0.0922095999. Bit fail 62134.
+Epochs          420. Current error: 0.0880827978. Bit fail 69405.
+Epochs          450. Current error: 0.0862017572. Bit fail 74269.
+Epochs          480. Current error: 0.0900367871. Bit fail 62701.
+Epochs          510. Current error: 0.0760849640. Bit fail 53843.
+Epochs          540. Current error: 0.0684242994. Bit fail 47427.
+Epochs          570. Current error: 0.0577801503. Bit fail 38980.
+Epochs          600. Current error: 0.0488382801. Bit fail 32802.
+Epochs          630. Current error: 0.0579006821. Bit fail 40020.
+Epochs          660. Current error: 0.0552653335. Bit fail 39192.
+Epochs          690. Current error: 0.1074636430. Bit fail 69718.
+Epochs          720. Current error: 0.1048656479. Bit fail 68664.
+Epochs          750. Current error: 0.0463952981. Bit fail 32572.
+Epochs          780. Current error: 0.0480185710. Bit fail 32692.
+Epochs          810. Current error: 0.0417189300. Bit fail 29819.
+Epochs          840. Current error: 0.0398673452. Bit fail 28831.
+Epochs          870. Current error: 0.0476194285. Bit fail 32925.
+Epochs          900. Current error: 0.0552698970. Bit fail 36728.
+Epochs          930. Current error: 0.0423623584. Bit fail 27533.
+Epochs          960. Current error: 0.0453945175. Bit fail 29813.
+Epochs          990. Current error: 0.0391805433. Bit fail 26407.
+Epochs         1020. Current error: 0.0364112817. Bit fail 25197.
+Epochs         1050. Current error: 0.0337486938. Bit fail 24406.
+Epochs         1080. Current error: 0.0330208465. Bit fail 24128.
+Epochs         1110. Current error: 0.0335074142. Bit fail 25056.
+Epochs         1140. Current error: 0.0336767174. Bit fail 25606.
+Epochs         1170. Current error: 0.0339743234. Bit fail 25774.
+Epochs         1200. Current error: 0.0309535805. Bit fail 23825.
+Epochs         1230. Current error: 0.0290125888. Bit fail 23137.
+Epochs         1260. Current error: 0.0282946154. Bit fail 22983.
+Epochs         1290. Current error: 0.0294017605. Bit fail 23819.
+Epochs         1320. Current error: 0.0296204500. Bit fail 24249.
+Epochs         1350. Current error: 0.0289701335. Bit fail 23762.
+Epochs         1380. Current error: 0.0289344359. Bit fail 23021.
+Epochs         1410. Current error: 0.0291612335. Bit fail 24015.
+Epochs         1440. Current error: 0.0267782640. Bit fail 22157.
+Epochs         1470. Current error: 0.0272322539. Bit fail 22427.
+Epochs         1500. Current error: 0.0285615530. Bit fail 23233.
+Epochs         1530. Current error: 0.0274228100. Bit fail 22253.
+Epochs         1560. Current error: 0.0306585152. Bit fail 24164.
+Epochs         1590. Current error: 0.0335790850. Bit fail 26203.
+Epochs         1620. Current error: 0.0371393338. Bit fail 28362.
+Epochs         1650. Current error: 0.0292276628. Bit fail 22971.
+Epochs         1680. Current error: 0.0277866349. Bit fail 22030.
+Epochs         1710. Current error: 0.0308626164. Bit fail 24218.
+Epochs         1740. Current error: 0.0302449670. Bit fail 24012.
+Epochs         1770. Current error: 0.0329170190. Bit fail 25889.
+Epochs         1800. Current error: 0.0335240103. Bit fail 26613.
+Epochs         1830. Current error: 0.0333136320. Bit fail 26349.
+Epochs         1860. Current error: 0.0339681841. Bit fail 26748.
+Epochs         1890. Current error: 0.0304066632. Bit fail 24762.
+Epochs         1920. Current error: 0.0308779292. Bit fail 24925.
+Epochs         1950. Current error: 0.0333788395. Bit fail 26463.
+Epochs         1980. Current error: 0.0278253295. Bit fail 22912.
+Epochs         2010. Current error: 0.0281323083. Bit fail 22898.
+Epochs         2040. Current error: 0.0299000554. Bit fail 23559.
+Epochs         2070. Current error: 0.0318154357. Bit fail 23886.
+Epochs         2100. Current error: 0.0307648927. Bit fail 23341.
+Epochs         2130. Current error: 0.0255679693. Bit fail 20826.
+Epochs         2160. Current error: 0.0273662340. Bit fail 22221.
