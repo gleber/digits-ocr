@@ -93,9 +93,10 @@ void test(char * fn, struct fann_train_data *data) {
 
 int main()
 {
+  printf("ma\n");
   struct fann_train_data *data;
   data = fann_read_train_from_file("test.data");
-  char* strings[10];
+  char* strings[12];
   strings[0] = "digits_2l_10000ts.net";
   strings[1] = "digits_3l_150hu_10000ts_002e.net";
   strings[2] = "digits_3l_450h_2000ts.net";
@@ -106,8 +107,10 @@ int main()
   strings[7] = "digits_3l_300hu_1000tr_500e.net";
   strings[8] = "digits_3l_80hu_1000tr.net";
   strings[9] = "digits_cascade_50n.net";
+  strings[10] = "digits_20000ep_60000ts_3l_150hu_.net";
+  strings[11] = "digits_50000ep_60000ts_3l_150hu_.net";
   int i;
-  for (i = 0; i < 10; i++) {
+  for (i = 0; i <= 11; i++) {
     printf("NN: %s ", strings[i]);
     test(strings[i], data);
   }
