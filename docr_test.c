@@ -17,19 +17,6 @@ void test(char * fn, struct fann_train_data *data) {
 
   ann = fann_create_from_file(fn);
 
-  /* printf("Testing network. %f\n", fann_test_data(ann, data));  */
-
-  /* int i; */
-  /* for(i = 0; i < fann_length_train_data(data); i++) */
-  /*   { */
-  /*     calc_out = fann_run(ann, data->input[i]); */
-  /*     printf("XOR test (%f,%f) -> %f, should be %f, difference=%f\n",  */
-  /*            data->input[i][0], data->input[i][1], calc_out[0], data->output[i][0], */
-  /*            fann_abs(calc_out[0] - data->output[i][0])); */
-  /*   } */
-
-  /* printf("Testing network.\n"); */
-
   int good = 0;
   int bad = 0;
 
@@ -91,28 +78,14 @@ void test(char * fn, struct fann_train_data *data) {
   return;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-  printf("ma\n");
   struct fann_train_data *data;
   data = fann_read_train_from_file("test.data");
-  char* strings[12];
-  strings[0] = "digits_2l_10000ts.net";
-  strings[1] = "digits_3l_150hu_10000ts_002e.net";
-  strings[2] = "digits_3l_450h_2000ts.net";
-  strings[3] = "digits_3l_1000hu_001e_2000ts.net";
-  strings[4] = "digits_3l_150hu_2000ts.net";
-  strings[5] = "digits_3l_450hu_1000ts_49e.net";
-  strings[6] = "digits_3l_1000hu_2000ts.net";
-  strings[7] = "digits_3l_300hu_1000tr_500e.net";
-  strings[8] = "digits_3l_80hu_1000tr.net";
-  strings[9] = "digits_cascade_50n.net";
-  strings[10] = "digits_20000ep_60000ts_3l_150hu_.net";
-  strings[11] = "digits_50000ep_60000ts_3l_150hu_.net";
   int i;
-  for (i = 0; i <= 11; i++) {
-    printf("NN: %s ", strings[i]);
-    test(strings[i], data);
+  for (i = 1; i < argc; i++) {
+    printf("NN: %s ", argv[i]);
+    test(argv[i], data);
   }
   fann_destroy_train(data);
   return 0;
