@@ -1,0 +1,32 @@
+Loading data...
+Will write to: digits_500ep_60000ts_3l_20hu_.net
+Creating network.
+Training network.
+Max epochs      500. Desired error: 0.0049999999.
+Epochs            1. Current error: 0.2577237785. Bit fail 600000.
+Epochs           20. Current error: 0.0919495597. Bit fail 60000.
+Epochs           40. Current error: 0.0916080624. Bit fail 60000.
+Epochs           60. Current error: 0.0916126594. Bit fail 60000.
+Epochs           80. Current error: 0.0947221145. Bit fail 61904.
+Epochs          100. Current error: 0.0872463435. Bit fail 57808.
+Epochs          120. Current error: 0.0913937166. Bit fail 60010.
+Epochs          140. Current error: 0.0913510695. Bit fail 60008.
+Epochs          160. Current error: 0.0917198434. Bit fail 60008.
+Epochs          180. Current error: 0.0916900486. Bit fail 60006.
+Epochs          200. Current error: 0.0916399434. Bit fail 60006.
+Epochs          220. Current error: 0.0916509256. Bit fail 60007.
+Epochs          240. Current error: 0.0916072205. Bit fail 60006.
+Epochs          260. Current error: 0.0916270837. Bit fail 60007.
+Epochs          280. Current error: 0.0916504785. Bit fail 60007.
+Epochs          300. Current error: 0.0916919336. Bit fail 60023.
+Epochs          320. Current error: 0.0917112827. Bit fail 60034.
+Epochs          340. Current error: 0.0916803032. Bit fail 60038.
+Epochs          360. Current error: 0.0916892067. Bit fail 60038.
+Epochs          380. Current error: 0.0916785821. Bit fail 60040.
+Epochs          400. Current error: 0.0885314122. Bit fail 58085.
+Epochs          420. Current error: 0.0882432237. Bit fail 57916.
+Epochs          440. Current error: 0.0880283713. Bit fail 57811.
+Epochs          460. Current error: 0.0881412253. Bit fail 57807.
+Epochs          480. Current error: 0.0881703496. Bit fail 57838.
+Epochs          500. Current error: 0.0881958678. Bit fail 57848.
+Cleaning up.
