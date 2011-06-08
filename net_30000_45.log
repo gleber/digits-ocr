@@ -29975,4 +29975,32 @@ Epochs        29969. Current error: 0.0743033215. Bit fail 66266.
 Epochs        29970. Current error: 0.0735197812. Bit fail 65793.
 Epochs        29971. Current error: 0.0742986426. Bit fail 66006.
 Epochs        29972. Current error: 0.0735027716. Bit fail 65534.
-Epochs        29973. Current erro
+Epochs        29973. Current error: 0.0742885396. Bit fail 66006.
+Epochs        29974. Current error: 0.0735199302. Bit fail 65539.
+Epochs        29975. Current error: 0.0743025914. Bit fail 66011.
+Epochs        29976. Current error: 0.0735163391. Bit fail 65541.
+Epochs        29977. Current error: 0.0743033364. Bit fail 66010.
+Epochs        29978. Current error: 0.0735206828. Bit fail 65545.
+Epochs        29979. Current error: 0.0742963105. Bit fail 66014.
+Epochs        29980. Current error: 0.0735193789. Bit fail 65548.
+Epochs        29981. Current error: 0.0743041411. Bit fail 66013.
+Epochs        29982. Current error: 0.0735293701. Bit fail 65550.
+Epochs        29983. Current error: 0.0743093044. Bit fail 64546.
+Epochs        29984. Current error: 0.0735389441. Bit fail 65557.
+Epochs        29985. Current error: 0.0743188187. Bit fail 66026.
+Epochs        29986. Current error: 0.0735437647. Bit fail 65559.
+Epochs        29987. Current error: 0.0743237063. Bit fail 66024.
+Epochs        29988. Current error: 0.0735495463. Bit fail 65555.
+Epochs        29989. Current error: 0.0743272156. Bit fail 66574.
+Epochs        29990. Current error: 0.0735469311. Bit fail 64618.
+Epochs        29991. Current error: 0.0743290335. Bit fail 65084.
+Epochs        29992. Current error: 0.0735533759. Bit fail 64614.
+Epochs        29993. Current error: 0.0743326247. Bit fail 65082.
+Epochs        29994. Current error: 0.0735387206. Bit fail 64610.
+Epochs        29995. Current error: 0.0743166357. Bit fail 65078.
+Epochs        29996. Current error: 0.0735346824. Bit fail 64607.
+Epochs        29997. Current error: 0.0742803141. Bit fail 65079.
+Epochs        29998. Current error: 0.0735308528. Bit fail 64612.
+Epochs        29999. Current error: 0.0742846876. Bit fail 65077.
+Epochs        30000. Current error: 0.0735067427. Bit fail 64609.
+Cleaning up.
