@@ -425,4 +425,23 @@ Results on validation data: 3634 / 5000, 0.726800
 Epochs        10500. MSE: 0.03829. Desired-MSE: 0.02000
 Results on validation data: 3844 / 5000, 0.768800
 Epochs        10550. MSE: 0.03518. Desired-MSE: 0.02000
-Results
+Results on validation data: 4019 / 5000, 0.803800
+Epochs        10600. MSE: 0.03424. Desired-MSE: 0.02000
+Results on validation data: 4070 / 5000, 0.814000
+Epochs        10650. MSE: 0.03374. Desired-MSE: 0.02000
+Results on validation data: 4073 / 5000, 0.814600
+Epochs        10700. MSE: 0.03456. Desired-MSE: 0.02000
+Results on validation data: 4099 / 5000, 0.819800
+Epochs        10750. MSE: 0.03543. Desired-MSE: 0.02000
+Results on validation data: 3985 / 5000, 0.797000
+Epochs        10800. MSE: 0.03413. Desired-MSE: 0.02000
+Results on validation data: 4056 / 5000, 0.811200
+Epochs        10850. MSE: 0.03334. Desired-MSE: 0.02000
+Results on validation data: 4091 / 5000, 0.818200
+Epochs        10900. MSE: 0.03305. Desired-MSE: 0.02000
+Results on validation data: 4053 / 5000, 0.810600
+Epochs        10950. MSE: 0.03376. Desired-MSE: 0.02000
+Results on validation data: 3999 / 5000, 0.799800
+Epochs        11000. MSE: 0.03549. Desired-MSE: 0.02000
+Results on validation data: 3886 / 5000, 0.777200
+Epochs        11050. MSE: 0
