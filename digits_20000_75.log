@@ -96,4 +96,22 @@ Epochs         2250. MSE: 0.02214. Desired-MSE: 0.02000
 Results on validation data: 4497 / 5000, 0.899400
 Epochs         2300. MSE: 0.02194. Desired-MSE: 0.02000
 Results on validation data: 4483 / 5000, 0.896600
-Epochs         2350. MSE: 0.02196. Desi
+Epochs         2350. MSE: 0.02196. Desired-MSE: 0.02000
+Results on validation data: 4425 / 5000, 0.885000
+Epochs         2400. MSE: 0.02291. Desired-MSE: 0.02000
+Results on validation data: 4469 / 5000, 0.893800
+Epochs         2450. MSE: 0.02151. Desired-MSE: 0.02000
+Results on validation data: 4366 / 5000, 0.873200
+Epochs         2500. MSE: 0.02099. Desired-MSE: 0.02000
+Results on validation data: 4503 / 5000, 0.900600
+Epochs         2550. MSE: 0.02093. Desired-MSE: 0.02000
+Results on validation data: 4477 / 5000, 0.895400
+Epochs         2600. MSE: 0.02042. Desired-MSE: 0.02000
+Results on validation data: 4504 / 5000, 0.900800
+Epochs         2650. MSE: 0.02399. Desired-MSE: 0.02000
+Results on validation data: 4523 / 5000, 0.904600
+Epochs         2700. MSE: 0.02880. Desired-MSE: 0.02000
+Results on validation data: 4153 / 5000, 0.830600
+Epochs         2744. MSE: 0.01995. Desired-MSE: 0.02000
+Results on validation data: 4528 / 5000, 0.905600
+Cleaning up.
